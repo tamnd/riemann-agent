@@ -41,6 +41,14 @@ rh help
 rh version
 ```
 
+Download the release and check it against the manifest of riemann-lean:
+
+```sh
+rh fetch -dir work/release -compare ../riemann-lean/manifests/files.sha256
+```
+
+The command downloads about 240 MB. A second run downloads only the files with a wrong hash.
+
 ## Exit codes
 
 | Code | Meaning |
