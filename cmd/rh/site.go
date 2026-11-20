@@ -40,6 +40,8 @@ func siteBuild(args []string, stdout, stderr io.Writer) error {
 	date := fs.String("date", "", "the build date, for example 2026-11-21")
 	math2 := fs.String("math2", site.DefaultMath2, "the index of Math 2.0, a file or a URL; empty for no index")
 	strict := fs.Bool("strict", false, "fail when a link to Math 2.0 names a tag that the index does not have")
+	indexDir := fs.String("index", "", "the records of rh index, for the code pages; empty for a site with no code pages")
+	spineDir := fs.String("spine", "", "the output of rh spine with -nocut, with the spine with the cut points in cut/")
 	check := fs.Bool("check", true, "check the site after the build")
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -56,7 +58,7 @@ func siteBuild(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	res, err := site.Build(ctx, site.Options{Content: *content, Out: *out, URL: *url, Commit: *commit, Date: *date, Version: Version, Math2: idx})
+	res, err := site.Build(ctx, site.Options{Content: *content, Out: *out, URL: *url, Commit: *commit, Date: *date, Version: Version, Math2: idx, Index: *indexDir, Spine: *spineDir})
 	if err != nil {
 		return err
 	}

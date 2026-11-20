@@ -1,0 +1,68 @@
+{{define "code"}}
+<article class="node">
+{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}
+<header class="node-head">
+  <h1>{{.Title}}</h1>
+  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+</header>
+{{with .Code}}
+<form class="search-box big" action="/code/decl/" role="search">
+  <input id="lean-q" type="search" name="n" placeholder="A Lean name, for example everyCharacter" aria-label="Search the Lean names" autocomplete="off">
+</form>
+<ul id="lean-results" class="results" aria-live="polite"></ul>
+<div class="prose">
+<h2 id="numbers">The numbers</h2>
+<table class="checks">
+<tr><th>Modules</th><td>{{num .Summary.Modules}}</td></tr>
+<tr><th>Lines</th><td>{{num .Summary.Lines}}</td></tr>
+<tr><th>Declarations</th><td>{{num .Summary.Decls}}, of which {{num .Summary.Private}} are private</td></tr>
+<tr><th>Edges of the declaration graph</th><td>{{num .Summary.Uses}} strong and {{num .Summary.Weak}} weak</td></tr>
+<tr><th>Longest import chain from Main</th><td>{{num .Summary.LongestChain}} modules</td></tr>
+{{with .Spine}}<tr><th>Declarations that the Riemann Hypothesis uses</th><td>{{num .Full}}, to a depth of {{.MaxDepth}}</td></tr>{{end}}
+{{with .Cut}}<tr><th>The same, with the cut at the named results</th><td>{{num .Size}}, with {{num .Cuts.literature}} cut points</td></tr>{{end}}
+</table>
+<p>The reader of <code>rh index</code> does not use Lean. It finds a name in a declaration and resolves it with the namespaces and the <code>open</code> commands. A strong edge is a name that resolves to one declaration. A weak edge is a name in dot notation, which can go to more than one declaration. So the numbers are close to the numbers of Lean, but they are not exact. The data is in <a href="{{url "api/code.json"}}">api/code.json</a>.</p>
+{{with .Trunk}}
+<h2 id="trunk">The trunk</h2>
+<p>Each theorem in this chain uses the next one, and each chain of uses from the top goes through it.</p>
+<ol class="chain">{{range .}}<li><a href="{{.URL}}"><code>{{.Name}}</code></a> <span class="muted">{{.Kind}}</span></li>{{end}}</ol>
+{{end}}
+{{with .Candidates}}
+<h2 id="branches">The large branches</h2>
+<p>A branch is a declaration under the trunk that only the trunk leads to. Its size is the number of declarations that only it leads to. Each branch here has more than 1% of the declarations that the top uses. These are the candidates for the chapters of the proof.</p>
+<table class="checks"><thead><tr><th>Declaration</th><th>Size</th><th>From</th></tr></thead><tbody>
+{{range .}}<tr><td><a href="{{.URL}}"><code>{{.Name}}</code></a></td><td>{{num .Size}} ({{.Share}})</td><td><code>{{.From}}</code></td></tr>{{end}}
+</tbody></table>
+{{end}}
+<h2 id="libraries">The libraries</h2>
+<table class="checks"><thead><tr><th>Library</th><th>Modules</th><th>Lines</th><th>Declarations</th></tr></thead><tbody>
+{{range .Summary.Libraries}}<tr><td>{{.Name}}</td><td>{{num .Modules}}</td><td>{{num .Lines}}</td><td>{{num .Decls}}</td></tr>{{end}}
+</tbody></table>
+</div>
+{{end}}
+<div class="prose">
+{{.Body}}
+</div>
+<p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}{{with .MarkdownURL}}<a href="{{.}}">Markdown</a>. {{end}}Something is wrong? <a href="{{$.Site.ContentRepo}}/issues/new?template=error.yml">Report it</a>.</p>
+</article>
+{{end}}
+
+{{define "decl"}}
+<article class="node">
+{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}
+<div id="decl" class="decl">
+<header class="node-head"><h1>Declaration</h1></header>
+<p id="decl-status" class="muted" role="status">This page reads the declaration from the files in api/decl/ and needs JavaScript. Without it, use the <a href="{{.Site.LeanRepo}}">Lean source</a>.</p>
+</div>
+</article>
+{{end}}
+
+{{define "module"}}
+<article class="node">
+{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}
+<div id="module" class="decl">
+<header class="node-head"><h1>Module</h1></header>
+<p id="module-status" class="muted" role="status">This page reads the module from the files in api/module/ and needs JavaScript. Without it, use the <a href="{{.Site.LeanRepo}}">Lean source</a>.</p>
+</div>
+</article>
+{{end}}

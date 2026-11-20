@@ -231,3 +231,14 @@ func sitePages(root string) ([]string, error) {
 func (e TimelineEntry) Link() string {
 	return chapterPath(e.Chapter + ".md")
 }
+
+func readJSON(path string, v any) error {
+	data, err := os.ReadFile(path) // #nosec G304 -- an input file of the build
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, v); err != nil {
+		return fmt.Errorf("%s: %w", path, err)
+	}
+	return nil
+}

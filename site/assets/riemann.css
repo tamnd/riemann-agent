@@ -69,3 +69,24 @@
   table.timeline td:nth-child(3) { margin: 0.3rem 0; }
   table.timeline td:nth-child(4) { font-size: 0.85rem; }
 }
+
+/* The code pages: a declaration, a module and the search of Lean names. */
+.decl-name { overflow-wrap: anywhere; font-family: var(--mono, ui-monospace, monospace); font-size: 1.5rem; }
+.decl-marks .mark { margin-right: 0.25rem; }
+.facts th { width: 8rem; white-space: nowrap; color: var(--muted); font-weight: 550; }
+.facts td { overflow-wrap: anywhere; }
+.facts .sub { color: var(--muted); font-size: 0.85rem; }
+.decl .doc { white-space: pre-wrap; margin: 1rem 0; }
+.decl pre.sig { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface); padding: 0.9rem 1rem; font-size: 0.85rem; }
+.decl-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.decl-lists section { background: var(--surface); padding: 0.9rem 1rem; }
+.decl-lists h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.5rem; font-weight: 650; }
+ul.names { list-style: none; margin: 0; padding: 0; max-height: 28rem; overflow-y: auto; }
+ul.names li { margin: 0.25rem 0; overflow-wrap: anywhere; line-height: 1.35; }
+ul.names code, #lean-results code { background: none; padding: 0; font-size: 0.82rem; }
+ul.names .sub { color: var(--muted); font-size: 0.8rem; }
+.results-head { font-size: 1rem; margin: 2rem 0 0.5rem; }
+.prose table.checks { display: table; width: 100%; font-size: inherit; }
+.prose .checks th { background: none; padding-left: 0; }
+.prose .checks td { padding-left: 0; }
+.prose .checks code { overflow-wrap: anywhere; }

@@ -22,6 +22,8 @@ import (
 
 	"github.com/tamnd/math2-agent/katex"
 	"github.com/tamnd/math2-agent/markup"
+
+	"github.com/tamnd/riemann-agent/index"
 )
 
 //go:embed templates/*.html
@@ -39,6 +41,8 @@ type Options struct {
 	Date    string // the build date, or ""
 	Version string // the version of rh
 	Math2   *Math2 // the index of Math 2.0; nil is an empty index
+	Index   string // the records of rh index, or "" for a site with no code pages
+	Spine   string // the output of rh spine, with the spine with the cut points in cut/, or ""
 }
 
 // Repositories of the project.
@@ -131,6 +135,7 @@ type view struct {
 	Side        *Side
 	Home        *HomeData
 	Timeline    []TimelineEntry
+	Code        *Code
 	Body        template.HTML
 	Content     template.HTML
 	SourceURL   string
@@ -179,6 +184,12 @@ type builder struct {
 	views  []*view
 	source Source
 	miss   map[string]bool
+
+	ix    *index.Index
+	graph *index.Graph
+	code  *Code
+	spine map[string]*index.SpineNode
+	paths map[string]string
 }
 
 // Build builds the site in opt.Out.
@@ -215,7 +226,7 @@ func Build(ctx context.Context, opt Options) (*Result, error) {
 	if !trust.Claimed() {
 		b.info.Claim = "The Lean code claims a proof of the Riemann Hypothesis. This site has not checked the claim yet."
 	}
-	b.tmpl, err = template.New("").Funcs(template.FuncMap{"url": func(p string) string { return "/" + p }}).ParseFS(templateFS, "templates/*.html")
+	b.tmpl, err = template.New("").Funcs(template.FuncMap{"url": func(p string) string { return "/" + p }, "num": num}).ParseFS(templateFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("site: templates: %w", err)
 	}
@@ -223,6 +234,9 @@ func Build(ctx context.Context, opt Options) (*Result, error) {
 		return nil, fmt.Errorf("site: katex: %w", err)
 	}
 	b.md = markup.New(b.math)
+	if err := b.codeData(); err != nil {
+		return nil, err
+	}
 	if err := b.collect(); err != nil {
 		return nil, err
 	}
@@ -362,6 +376,10 @@ func (b *builder) collect() error {
 			v.Home = &HomeData{Eyebrow: d.Front.Eyebrow, Doors: d.Front.Doors}
 		case "trust":
 			v.Path, v.Section, v.tmpl = "trust/", "trust", "trust"
+		case "code":
+			v.Path, v.Section, v.tmpl = "code/", "code", "code"
+			v.Code = b.code
+			v.Trail = []Crumb{{Text: "Home", URL: "/"}, {Text: "Code", Current: true}}
 		default:
 			v.Path, v.Section, v.tmpl = name+"/", name, "page"
 			v.Trail = []Crumb{{Text: "Home", URL: "/"}, {Text: d.Front.Title, Current: true}}
@@ -390,6 +408,13 @@ func (b *builder) collect() error {
 	}
 	if err := b.timeline(); err != nil {
 		return err
+	}
+	if b.code != nil {
+		codeTrail := func(t string) []Crumb {
+			return []Crumb{{Text: "Home", URL: "/"}, {Text: "Code", URL: "/code/"}, {Text: t, Current: true}}
+		}
+		b.add(&view{Path: "code/decl/", Title: "Declaration", Description: "A declaration of the Lean code: its statement, its file, what it uses and what uses it.", Section: "code", tmpl: "decl", Code: b.code, Trail: codeTrail("Declaration")})
+		b.add(&view{Path: "code/module/", Title: "Module", Description: "A file of the Lean code: its imports and its declarations.", Section: "code", tmpl: "module", Code: b.code, Trail: codeTrail("Module")})
 	}
 	b.add(&view{Path: "search/", Title: "Search", Description: "Search the pages of riemann.", Section: "search", tmpl: "search"})
 	b.add(&view{Path: "404.html", Title: "Page not found", Description: "This page does not exist.", tmpl: "notfound"})
@@ -515,6 +540,7 @@ func (b *builder) write() (*Result, error) {
 		return nil, err
 	}
 	b.machine(w)
+	b.codeFiles(w)
 	if w.err != nil {
 		return nil, fmt.Errorf("site: %w", w.err)
 	}
@@ -641,6 +667,16 @@ func (w *writer) file(name string, data []byte) {
 	w.bytes += int64(len(data))
 }
 
+// json1 writes compact JSON, for the large data files.
+func (w *writer) json1(name string, v any) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		w.err = err
+		return
+	}
+	w.file(name, append(data, '\n'))
+}
+
 func (w *writer) json(name string, v any) {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -648,4 +684,16 @@ func (w *writer) json(name string, v any) {
 		return
 	}
 	w.file(name, append(data, '\n'))
+}
+
+// num writes a number with a comma for each group of three digits: 1061531 is 1,061,531.
+func num(n int) string {
+	s := fmt.Sprint(n)
+	if n < 0 {
+		return "-" + num(-n)
+	}
+	for i := len(s) - 3; i > 0; i -= 3 {
+		s = s[:i] + "," + s[i:]
+	}
+	return s
 }

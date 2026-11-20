@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="{{url "assets/riemann.css"}}">
 <script>document.documentElement.dataset.theme = localStorage.getItem("m2-theme") || "";</script>
 <script defer src="{{url "assets/site.js"}}"></script>
+{{if or (eq .Section "code") (eq .Section "search")}}<script defer src="{{url "assets/code.js"}}" data-lean="{{.Site.LeanRepo}}/blob/{{.Site.SourceCommit}}/lean/src/"></script>{{end}}
 </head>
 <body data-base="{{url ""}}" class="s-{{if .Section}}{{.Section}}{{else}}none{{end}}">
 <a class="skip" href="#content">Skip to the content</a>
