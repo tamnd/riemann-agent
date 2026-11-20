@@ -102,7 +102,8 @@ func Load(dir string) (*Index, error) {
 		return nil, err
 	}
 	for _, e := range entries {
-		if !strings.HasSuffix(e.Name(), ".jsonl.gz") {
+		// Skip the hidden files, such as the ._ files that tar on macOS adds.
+		if !strings.HasSuffix(e.Name(), ".jsonl.gz") || strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
 		err := readGzipLines(filepath.Join(dir, "decls", e.Name()), func(line []byte) error {
