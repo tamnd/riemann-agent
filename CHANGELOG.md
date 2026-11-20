@@ -7,6 +7,7 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 ### Added
 
 - `rh index` reads the Lean source without Lean and writes `modules.jsonl.gz`, `decls/<xx>.jsonl.gz` and `summary.json`. The package `lean/syntax` finds the imports, the namespaces, the open commands, the declarations and the identifiers. The package `index` resolves the identifiers with the rules of spec 04.2 and makes the syntactic declaration graph. On the release it reads 175,187 modules and 1,061,531 declarations in about 6 minutes, and the longest import chain from `Main` has 203 modules.
+- `rh graph` answers four questions on the declaration graph: what a declaration uses, what uses it, a shortest chain of uses from one declaration to another, and the closure. `rh spine` finds the declarations that the root uses, stops at the named results of spec 04.6, and gives the depth, fan-in and dominator size of each node, the trunk and the chapter candidates. It writes `spine.json` and `spine.jsonl.gz`. On the release the spine of `riemannHypothesis` has 156,339 declarations with the cut points and 769,260 without them.
 
 ## v0.1.0 (2026-11-21)
 
