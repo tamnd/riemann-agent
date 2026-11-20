@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.1.0 (2026-11-21)
+
+Milestone M0, the source and the site.
+
 ### Added
 
 - The workflow `release` builds `rh` for Linux, macOS and Windows on amd64 and arm64 when a tag `v*` is pushed. It adds `checksums.txt` and a build provenance attestation to the release.
