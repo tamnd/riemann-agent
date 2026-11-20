@@ -43,6 +43,12 @@ rh site build -content ../riemann -out public
 rh site serve -dir public
 ```
 
+Index the Lean source of riemann-lean. The command needs about 4 GB of memory:
+
+```sh
+rh index -src ../riemann-lean/lean/src -out work/index
+```
+
 Download the release and check it against the manifest of riemann-lean:
 
 ```sh

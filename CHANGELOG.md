@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Added
+
+- `rh index` reads the Lean source without Lean and writes `modules.jsonl.gz`, `decls/<xx>.jsonl.gz` and `summary.json`. The package `lean/syntax` finds the imports, the namespaces, the open commands, the declarations and the identifiers. The package `index` resolves the identifiers with the rules of spec 04.2 and makes the syntactic declaration graph. On the release it reads 175,187 modules and 1,061,531 declarations in about 6 minutes, and the longest import chain from `Main` has 203 modules.
+
 ## v0.1.0 (2026-11-21)
 
 Milestone M0, the source and the site.

@@ -32,7 +32,7 @@ func commands() []command {
 		{name: "version", summary: "print the version of rh", run: runVersion},
 		{name: "fetch", summary: "download the release, check its hashes and unpack it", run: runFetch},
 		{name: "site", summary: "build, check or serve the site", run: runSite},
-		{name: "index", summary: "read the Lean source and write the records of modules and declarations", milestone: "M1"},
+		{name: "index", summary: "read the Lean source and write the records of modules and declarations", run: runIndex},
 		{name: "graph", summary: "query the module graph and the declaration graph", milestone: "M1"},
 		{name: "spine", summary: "find the declarations that the top theorem needs", milestone: "M1"},
 		{name: "trust", summary: "run the axiom check and the kernel replay, and write the trust report", milestone: "M2"},
