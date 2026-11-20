@@ -29,12 +29,12 @@ func Walk(archivePath string, fn func(Entry) error) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	zr, err := gzip.NewReader(bufio.NewReaderSize(in, 1<<20))
 	if err != nil {
 		return err
 	}
-	defer zr.Close()
+	defer func() { _ = zr.Close() }()
 	tr := tar.NewReader(zr)
 	for {
 		h, err := tr.Next()
@@ -80,7 +80,7 @@ func Unpack(archivePath, dest string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer root.Close()
+	defer func() { _ = root.Close() }()
 	err = Walk(archivePath, func(e Entry) error {
 		if dir := path.Dir(e.Name); dir != "." {
 			if err := root.MkdirAll(dir, 0o750); err != nil {

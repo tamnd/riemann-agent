@@ -54,7 +54,7 @@ func (f *Fetcher) Get(ctx context.Context, dir string, file File) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%s: %s", url, resp.Status)
 	}
@@ -62,7 +62,7 @@ func (f *Fetcher) Get(ctx context.Context, dir string, file File) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmp.Name())
+	defer func() { _ = os.Remove(tmp.Name()) }()
 	h := sha256.New()
 	// Read one byte more than the size, so that a longer file fails the size check.
 	n, err := io.Copy(io.MultiWriter(tmp, h), io.LimitReader(resp.Body, file.Size+1))
@@ -124,7 +124,7 @@ func Join(dir string, r Release) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer os.Remove(tmp.Name())
+	defer func() { _ = os.Remove(tmp.Name()) }()
 	h := sha256.New()
 	w := io.MultiWriter(tmp, h)
 	for _, p := range r.Parts {
@@ -147,7 +147,7 @@ func appendFile(w io.Writer, path string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	_, err = io.Copy(w, in)
 	return err
 }
@@ -177,7 +177,7 @@ func HashFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	h := sha256.New()
 	if _, err := io.Copy(h, in); err != nil {
 		return "", err

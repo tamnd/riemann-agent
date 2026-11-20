@@ -38,7 +38,7 @@ func runFetch(args []string, stdout, stderr io.Writer) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	var log io.Writer = stdout
+	log := stdout
 	if *quiet {
 		log = nil
 	}
@@ -76,7 +76,7 @@ func runFetch(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	want, err := source.ReadManifest(in)
 	if err != nil {
 		return fmt.Errorf("%s: %w", *compare, err)
