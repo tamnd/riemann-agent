@@ -112,12 +112,16 @@ func siteServe(args []string, stdout, stderr io.Writer) error {
 		}
 		return fmt.Errorf("%w: %v", errUsage, err)
 	}
+	h, err := site.Handler(*dir)
+	if err != nil {
+		return err
+	}
 	ln, err := net.Listen("tcp", *addr)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(stdout, "serving %s at http://%s/\n", *dir, ln.Addr())
-	srv := &http.Server{Handler: site.Handler(*dir), ReadHeaderTimeout: 10 * time.Second}
+	srv := &http.Server{Handler: h, ReadHeaderTimeout: 10 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 	go func() {

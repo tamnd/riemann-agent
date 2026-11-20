@@ -113,9 +113,13 @@ func TestCheck(t *testing.T) {
 
 func TestServe(t *testing.T) {
 	out, _ := build(t)
-	srv := httptest.NewServer(Handler(out))
+	h, err := Handler(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewServer(h)
 	defer srv.Close()
-	for path, code := range map[string]int{"/": 200, "/proof/": 200, "/proof/index.md": 200, "/nowhere/": 404} {
+	for path, code := range map[string]int{"/": 200, "/proof/": 200, "/proof/index.md": 200, "/nowhere/": 404, "/../etc/passwd": 404} {
 		resp, err := http.Get(srv.URL + path)
 		if err != nil {
 			t.Fatal(err)
