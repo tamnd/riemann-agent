@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -75,6 +76,8 @@ type TimelineEntry struct {
 	Date    string `yaml:"date"`
 	Text    string `yaml:"text"`
 	Chapter string `yaml:"chapter"`
+
+	HTML template.HTML `yaml:"-"` // Text, rendered by the build
 }
 
 // Trust is the trust report, records/trust.json. Until milestone M2 the file does not exist, and the site shows each check as not run.

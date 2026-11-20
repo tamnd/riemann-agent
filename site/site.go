@@ -286,9 +286,9 @@ func (b *builder) render(src string) (template.HTML, error) {
 func (b *builder) side(f Front) *Side {
 	s := &Side{}
 	for _, l := range f.Lean {
-		where := l.File
+		where := path.Base(l.File)
 		if l.Line > 0 {
-			where = fmt.Sprintf("%s, line %d", l.File, l.Line)
+			where = fmt.Sprintf("%s, line %d", where, l.Line)
 		}
 		s.Lean = append(s.Lean, SideLink{Name: l.Name, URL: b.leanURL(l.File, l.Line), Where: where})
 	}
@@ -469,6 +469,13 @@ func (b *builder) write() (*Result, error) {
 	w := &writer{root: root}
 
 	for _, v := range b.views {
+		for i := range v.Timeline {
+			h, err := b.render(v.Timeline[i].Text)
+			if err != nil {
+				return nil, fmt.Errorf("site: timeline step %d: %w", v.Timeline[i].N, err)
+			}
+			v.Timeline[i].HTML = inline(h)
+		}
 		if v.markdown != "" {
 			body, err := b.render(v.markdown)
 			if err != nil {
@@ -517,6 +524,15 @@ func (b *builder) write() (*Result, error) {
 	}
 	sort.Strings(res.Missing)
 	return res, nil
+}
+
+// inline removes the paragraph around a short text.
+func inline(h template.HTML) template.HTML {
+	s := strings.TrimSpace(string(h))
+	if strings.HasPrefix(s, "<p>") && strings.HasSuffix(s, "</p>") && strings.Count(s, "<p>") == 1 {
+		s = s[3 : len(s)-4]
+	}
+	return template.HTML(s) // #nosec G203 -- the output of the Markdown renderer
 }
 
 // machine writes the files for agents and for the host: the JSON in api/, llms.txt, the sitemap, robots.txt and _headers.

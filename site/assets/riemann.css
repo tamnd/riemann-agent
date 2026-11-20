@@ -15,6 +15,7 @@
 .with-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
 .with-side > .side { order: 2; }
 @media (min-width: 64rem) {
+  .node:has(> .with-side) { max-width: calc(var(--measure) + 20.5rem); }
   .with-side { grid-template-columns: minmax(0, var(--measure)) 17rem; gap: 3.5rem; }
   .with-side > .side { order: 0; position: sticky; top: 4.5rem; align-self: start; max-height: calc(100vh - 6rem); overflow-y: auto; }
 }
@@ -23,7 +24,7 @@
 .side h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.5rem; font-weight: 650; }
 .side ul { list-style: none; margin: 0; padding: 0; }
 .side li { margin: 0.3rem 0; line-height: 1.35; }
-.side li .sub { display: block; color: var(--muted); font-size: 0.8rem; }
+.side li .sub { display: block; overflow-wrap: anywhere; color: var(--muted); font-size: 0.8rem; }
 .side code { background: none; padding: 0; font-size: 0.82rem; word-break: break-word; }
 
 /* The status of a step, a chapter or a check. */
@@ -57,3 +58,14 @@
 
 .page-foot { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--surface-2); font-size: 0.85rem; color: var(--muted); }
 .page-foot a { color: var(--muted); }
+
+/* On a narrow screen, each step of the timeline is a block: the number and the date on one line, then the text, then the chapter. */
+@media (max-width: 40rem) {
+  table.timeline thead { display: none; }
+  table.timeline, table.timeline tbody, table.timeline tr, table.timeline td { display: block; }
+  table.timeline tr { padding: 0.7rem 0.8rem; }
+  table.timeline td { padding: 0; border: 0; }
+  table.timeline td:nth-child(1), table.timeline td:nth-child(2) { display: inline; color: var(--muted); margin-right: 0.6rem; }
+  table.timeline td:nth-child(3) { margin: 0.3rem 0; }
+  table.timeline td:nth-child(4) { font-size: 0.85rem; }
+}
