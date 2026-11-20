@@ -39,6 +39,8 @@ go install github.com/tamnd/riemann-agent/cmd/rh@latest
 ```sh
 rh help
 rh version
+rh site build -content ../riemann -out public
+rh site serve -dir public
 ```
 
 Download the release and check it against the manifest of riemann-lean:
@@ -48,6 +50,8 @@ rh fetch -dir work/release -compare ../riemann-lean/manifests/files.sha256
 ```
 
 The command downloads about 240 MB. A second run downloads only the files with a wrong hash.
+
+`rh site build` reads the index of Math 2.0 from https://math2.tamnd.com/api/nodes.json. Use `-math2 FILE` to read a copy, or `-math2 ""` to build with no network.
 
 ## Exit codes
 

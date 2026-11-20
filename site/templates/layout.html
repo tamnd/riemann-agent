@@ -1,0 +1,83 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{if .Title}}{{.Title}} · {{.Site.Name}}{{else}}{{.Site.Name}} · a written proof of the Lean proof of the Riemann Hypothesis{{end}}</title>
+<meta name="description" content="{{.Description}}">
+<meta name="color-scheme" content="light dark">
+<meta property="og:site_name" content="{{.Site.Name}}">
+<meta property="og:type" content="{{if .Title}}article{{else}}website{{end}}">
+<meta property="og:url" content="{{.Site.Canonical .Path}}">
+<meta property="og:title" content="{{if .Title}}{{.Title}}{{else}}{{.Site.Name}}{{end}}">
+<meta property="og:description" content="{{.Description}}">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="{{.Site.Canonical .Path}}">
+{{with .MarkdownURL}}<link rel="alternate" type="text/markdown" href="{{.}}">
+{{end}}<link rel="alternate" type="text/plain" title="llms.txt" href="{{url "llms.txt"}}">
+<link rel="icon" href="{{url "assets/icon.svg"}}" type="image/svg+xml">
+<link rel="preload" href="{{url "assets/fonts/InterVariable.woff2"}}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{url "assets/site.css"}}">
+<link rel="stylesheet" href="{{url "assets/riemann.css"}}">
+<script>document.documentElement.dataset.theme = localStorage.getItem("m2-theme") || "";</script>
+<script defer src="{{url "assets/site.js"}}"></script>
+</head>
+<body data-base="{{url ""}}" class="s-{{if .Section}}{{.Section}}{{else}}none{{end}}">
+<a class="skip" href="#content">Skip to the content</a>
+<header class="top">
+  <a class="brand" href="{{url ""}}" aria-label="{{.Site.Name}}, main page"><img src="{{url "assets/icon.svg"}}" alt="" width="26" height="26"><span>{{.Site.Name}}</span></a>
+  <nav class="main-nav" aria-label="Main">
+    {{range .Site.Menu}}<a href="{{url .Path}}"{{if eq $.Section .Section}} aria-current="page"{{end}} title="{{.Question}}">{{.Text}}</a>
+    {{end}}
+  </nav>
+  <form class="search-box" action="{{url "search/"}}" role="search">
+    <input type="search" name="q" placeholder="Search pages and names" aria-label="Search" autocomplete="off">
+  </form>
+  <button class="theme" type="button" aria-label="Change the colour theme" title="Change the colour theme"><span aria-hidden="true">◐</span></button>
+</header>
+{{with .Site.Claim}}<p class="claim-bar">{{.}} <a href="{{url "trust/"}}">See what is checked</a>.</p>{{end}}
+<main id="content">
+{{.Content}}
+</main>
+<footer class="bottom">
+  <div class="foot-cols">
+    <section>
+      <h2>Read</h2>
+      <ul>
+        <li><a href="{{url "proof/"}}">The proof</a></li>
+        <li><a href="{{url "proof/timeline/"}}">The timeline of the note</a></li>
+        <li><a href="{{url "learn/"}}">Learn</a></li>
+        <li><a href="{{url "search/"}}">Search</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Check</h2>
+      <ul>
+        <li><a href="{{url "trust/"}}">Trust report</a></li>
+        <li><a href="{{url "code/"}}">The Lean code</a></li>
+        <li><a href="{{.Site.LeanRepo}}">riemann-lean on GitHub</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Project</h2>
+      <ul>
+        <li><a href="{{url "about/"}}">About</a></li>
+        <li><a href="{{.Site.ContentRepo}}">Content on GitHub</a></li>
+        <li><a href="{{.Site.AgentRepo}}">Toolchain on GitHub</a></li>
+        <li><a href="https://math2.tamnd.com">Math 2.0</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>For machines</h2>
+      <ul>
+        <li><a href="{{url "llms.txt"}}">llms.txt</a></li>
+        <li><a href="{{url "api/pages.json"}}">JSON</a></li>
+        <li><a href="{{url "sitemap.xml"}}">Sitemap</a></li>
+      </ul>
+    </section>
+  </div>
+  <p class="fine">The text is under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, the data under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> and the toolchain under MIT. The Lean code stays with its author. The pages describe <a href="{{.Site.LeanRepo}}/tree/{{.Site.SourceCommit}}">riemann-lean {{printf "%.7s" .Site.SourceCommit}}</a> ({{.Site.Release}}). Built by rh {{.Site.Version}}{{with .Site.Commit}} from <a href="{{$.Site.ContentRepo}}/commit/{{.}}">{{printf "%.7s" .}}</a>{{end}}{{with .Site.Built}} on {{.}}{{end}}. The style comes from <a href="https://math2.tamnd.com">Math 2.0</a>.</p>
+</footer>
+</body>
+</html>
+{{end}}

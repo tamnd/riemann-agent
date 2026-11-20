@@ -1,0 +1,20 @@
+{{define "timeline"}}
+<article class="node">
+{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}
+<header class="node-head">
+  <h1>{{.Title}}</h1>
+  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+</header>
+<div class="prose">
+{{.Body}}
+</div>
+<table class="list timeline">
+  <thead><tr><th scope="col">#</th><th scope="col">Date</th><th scope="col">Step</th><th scope="col">Chapter</th></tr></thead>
+  <tbody>
+  {{range .Timeline}}<tr><td>{{.N}}</td><td>{{.Date}}</td><td>{{.Text}}</td><td>{{if .Chapter}}<a href="{{url .Link}}">{{.Chapter}}</a>{{else}}<span class="muted">later</span>{{end}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+<p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}</p>
+</article>
+{{end}}

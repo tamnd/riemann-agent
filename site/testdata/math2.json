@@ -1,0 +1,4 @@
+{"commit": "abc", "nodes": [
+ {"tag": "VCGF9YR36X", "kind": "conjecture", "name": "Riemann hypothesis", "url": "https://math2.tamnd.com/wiki/riemann-hypothesis/"},
+ {"tag": "9D2Z543EJQ", "kind": "concept", "name": "Dirichlet L-function", "url": "https://math2.tamnd.com/wiki/dirichlet-l-function/"}
+]}

@@ -1,0 +1,11 @@
+title: The timeline of the note
+lead: The steps in order.
+intro: The note has steps.
+steps:
+  - n: 1
+    date: 2026-11-01
+    text: The first step.
+  - n: 2
+    date: 2026-11-02
+    text: The overview.
+    chapter: overview

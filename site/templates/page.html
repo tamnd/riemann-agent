@@ -1,0 +1,29 @@
+{{define "page"}}
+<article class="node">
+{{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}{{with $.Level}}<li><span class="level" title="The level of the text">{{.}}</span></li>{{end}}</ol></nav>{{end}}
+{{if .Side}}<div class="with-side">
+<div class="main-col">
+{{template "page-body" .}}
+</div>
+<aside class="side" aria-label="Context">
+{{with .Side.Lean}}<section><h2>In Lean</h2><ul>{{range .}}<li><a href="{{.URL}}"><code>{{.Name}}</code></a>{{with .Where}}<span class="sub">{{.}}</span>{{end}}</li>{{end}}</ul></section>{{end}}
+{{with .Side.Needs}}<section><h2>Needs</h2><ul>{{range .}}<li><a href="{{.URL}}"{{if .Missing}} class="missing" title="This page does not exist yet"{{end}}>{{.Text}}</a>{{with .Sub}}<span class="sub">{{.}}</span>{{end}}</li>{{end}}</ul></section>{{end}}
+{{with .Side.UsedBy}}<section><h2>Used by</h2><ul>{{range .}}<li><a href="{{.URL}}">{{.Text}}</a></li>{{end}}</ul></section>{{end}}
+{{with .Side.Next}}<section><h2>Read next</h2><ul>{{range .}}<li><a href="{{.URL}}">{{.Text}}</a>{{with .Sub}}<span class="sub">{{.}}</span>{{end}}</li>{{end}}</ul></section>{{end}}
+</aside>
+</div>
+{{else}}{{template "page-body" .}}{{end}}
+</article>
+{{end}}
+
+{{define "page-body"}}
+<header class="node-head">
+  <h1>{{.Title}}</h1>
+  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+  {{with .Status}}<p><span class="mark{{if eq . "checked" "reviewed"}} yes{{else}} open{{end}}" title="The status of this text">{{.}}</span></p>{{end}}
+</header>
+<div class="prose">
+{{.Body}}
+</div>
+<p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}{{with .MarkdownURL}}<a href="{{.}}">Markdown</a>. {{end}}Something is wrong? <a href="{{$.Site.ContentRepo}}/issues/new?template=error.yml">Report it</a>.</p>
+{{end}}

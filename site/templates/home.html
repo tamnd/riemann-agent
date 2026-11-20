@@ -1,0 +1,35 @@
+{{define "home"}}
+<section class="hero">
+  <p class="eyebrow">{{.Home.Eyebrow}}</p>
+  <h1>{{.Title}}</h1>
+  <p class="lead">{{.Lead}}</p>
+  <p class="hero-links"><a class="button primary" href="{{url "proof/"}}">Read the proof</a> <a class="button" href="{{url "learn/"}}">What to learn first</a> <a class="button" href="{{url "trust/"}}">What is checked</a></p>
+</section>
+
+<section aria-labelledby="checks-h">
+  <h2 id="checks-h">The state of the claim</h2>
+  {{template "checks" .Site.Trust}}
+</section>
+
+<section aria-labelledby="doors-h">
+  <h2 id="doors-h">Where to start</h2>
+  <ul class="doors">
+    {{range .Home.Doors}}<li><a href="{{url .Path}}">{{.Title}}</a><p>{{.Text}}</p></li>
+    {{end}}
+  </ul>
+</section>
+
+<div class="prose">
+{{.Body}}
+</div>
+{{end}}
+
+{{define "checks"}}
+<table class="checks">
+  <tbody>
+  {{range .Checks}}<tr><td class="state"><span class="mark {{.Class}}">{{.State}}</span></td><th scope="row">{{.Question}}</th><td>{{.Note}}</td></tr>
+  {{end}}
+  </tbody>
+</table>
+{{with .Updated}}<p class="muted">Updated {{.}}.</p>{{end}}
+{{end}}
