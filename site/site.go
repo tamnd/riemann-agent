@@ -588,7 +588,7 @@ func (b *builder) machine(w *writer) {
 	w.file("_headers", []byte(headers))
 }
 
-// headers are the HTTP headers for Cloudflare Pages.
+// headers are the HTTP headers of the _headers file, which Cloudflare static assets read.
 const headers = `/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

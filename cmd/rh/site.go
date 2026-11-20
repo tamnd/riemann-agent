@@ -97,7 +97,7 @@ func report(dir string, stdout io.Writer) error {
 	if !r.OK() {
 		return fmt.Errorf("the site has %d problems", len(r.Problems))
 	}
-	fmt.Fprintf(stdout, "the site is good: %d files, %d bytes, in the limits of Cloudflare Pages\n", r.Files, r.Bytes)
+	fmt.Fprintf(stdout, "the site is good: %d files, %d bytes, in the limits of Cloudflare static assets\n", r.Files, r.Bytes)
 	return nil
 }
 

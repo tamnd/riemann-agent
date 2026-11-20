@@ -40,7 +40,7 @@ func commands() []command {
 		{name: "check", summary: "check the written proof against the records", milestone: "M3"},
 		{name: "link", summary: "match the names of the proof with the nodes of Math 2.0", milestone: "M4"},
 		{name: "draft", summary: "draft one step of the written proof with a model", milestone: "M5"},
-		{name: "deploy", summary: "upload the site to Cloudflare Pages", milestone: "M0"},
+		{name: "deploy", summary: "upload the site to the Cloudflare Worker", milestone: "M0"},
 	}
 }
 

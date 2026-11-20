@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// The limits of Cloudflare Pages, with a margin.
+// The limits of Cloudflare static assets, with a margin.
 const (
 	MaxFiles    = 19500
 	MaxFileSize = 25 << 20
