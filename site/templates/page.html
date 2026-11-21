@@ -22,7 +22,7 @@
 {{define "page-body"}}
 <header class="node-head">
   <h1>{{.Title}}</h1>
-  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+  {{if .LeadHTML}}<p class="lead">{{.LeadHTML}}</p>{{else}}{{with .Lead}}<p class="lead">{{.}}</p>{{end}}{{end}}
   {{with .Status}}<p><span class="mark{{if eq . "checked" "reviewed"}} yes{{else}} open{{end}}" title="The status of this text">{{.}}</span></p>{{end}}
 </header>
 <div class="prose">

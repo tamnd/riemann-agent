@@ -18,6 +18,8 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - `rh link` copies the first sentence of the summary of each Math 2.0 node that a path or the glossary uses into the table `summaries` of `links/math2.yaml`. A path page shows this sentence under each concept, so a reader sees what the concept is before the link.
 - The timeline names the chapter by its title, and a new column Learn links each step of the note to the learning path with its background.
 - `rh link` expands the TeX macros of Math 2.0, such as `\C` and `\abs`, when it copies a summary. It reads them from `macros/m2.katex.json` of the checkout. So the site renders each summary with no macros of its own.
+- When a Math 2.0 summary starts with a setup sentence, such as "Let V be a vector space over C.", `rh link` keeps the setup with the next sentence. It skips a summary that only says which topic the node is a part of.
+- A lead with code or math shows as rendered Markdown, not as raw text. A path page names the chapter that it prepares for as a chapter, so the link does not look like a link to the path itself.
 
 ## v0.2.2 (2026-11-21)
 

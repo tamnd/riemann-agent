@@ -172,7 +172,11 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 		fmt.Fprintf(&out, "Read first: %s.\n\n", strings.Join(before, ", "))
 	}
 	if len(after) > 0 {
-		fmt.Fprintf(&out, "This path prepares you for %s.\n\n", strings.Join(after, ", "))
+		word := "chapter"
+		if len(after) > 1 {
+			word = "chapters"
+		}
+		fmt.Fprintf(&out, "This path prepares you for the %s %s.\n\n", word, strings.Join(after, ", "))
 	}
 	fmt.Fprintf(&out, "The path has %d concepts. Learn them in order. Mark a concept as known when you know it, and the mark stays in this browser.\n\n", len(p.Items))
 	for i, it := range p.Items {

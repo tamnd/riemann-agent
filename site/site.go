@@ -139,6 +139,7 @@ type view struct {
 	Title       string
 	Description string
 	Lead        string
+	LeadHTML    template.HTML // the lead with its Markdown rendered, when it has code or math
 	Level       string
 	Status      string
 	Section     string
@@ -542,7 +543,10 @@ func (b *builder) timeline() error {
 func (b *builder) add(v *view) {
 	v.Site = b.info
 	if v.Description == "" {
-		v.Description = v.Lead
+		v.Description = strings.ReplaceAll(v.Lead, "`", "")
+	}
+	if strings.ContainsAny(v.Lead, "`$*[") {
+		v.LeadHTML = inline(template.HTML(b.inline(v.Lead))) // #nosec G203 -- the output of the Markdown renderer
 	}
 	if v.markdown != "" && !strings.HasSuffix(v.Path, ".html") {
 		v.MarkdownURL = "/" + v.Path + "index.md"

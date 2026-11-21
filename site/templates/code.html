@@ -3,7 +3,7 @@
 {{with .Trail}}<nav aria-label="Trail"><ol class="trail">{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></nav>{{end}}
 <header class="node-head">
   <h1>{{.Title}}</h1>
-  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+  {{if .LeadHTML}}<p class="lead">{{.LeadHTML}}</p>{{else}}{{with .Lead}}<p class="lead">{{.}}</p>{{end}}{{end}}
 </header>
 {{with .Code}}
 <form class="search-box big" action="/code/decl/" role="search">

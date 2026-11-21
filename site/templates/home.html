@@ -2,7 +2,7 @@
 <section class="hero">
   <p class="eyebrow">{{.Home.Eyebrow}}</p>
   <h1>{{.Title}}</h1>
-  <p class="lead">{{.Lead}}</p>
+  <p class="lead">{{if .LeadHTML}}{{.LeadHTML}}{{else}}{{.Lead}}{{end}}</p>
   <p class="hero-links"><a class="button primary" href="{{url "proof/"}}">Read the proof</a> <a class="button" href="{{url "learn/"}}">What to learn first</a> <a class="button" href="{{url "trust/"}}">What is checked</a></p>
 </section>
 

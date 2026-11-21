@@ -2,7 +2,7 @@
 <article class="node">
 <header class="node-head">
   <h1>{{.Title}}</h1>
-  {{with .Lead}}<p class="lead">{{.}}</p>{{end}}
+  {{if .LeadHTML}}<p class="lead">{{.LeadHTML}}</p>{{else}}{{with .Lead}}<p class="lead">{{.}}</p>{{end}}{{end}}
 </header>
 {{template "checks" .Site.Trust}}
 <div class="prose">

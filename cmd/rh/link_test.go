@@ -67,3 +67,30 @@ func TestExpandMacros(t *testing.T) {
 		}
 	}
 }
+
+func TestNodeSummary(t *testing.T) {
+	root := t.TempDir()
+	write := func(tag, summary string) {
+		dir := filepath.Join(root, "nodes", tag[:3])
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		body := "---\ntitle: x\n---\n\n## Summary\n\n" + summary + "\n\n## Motivation\n\nMore.\n"
+		if err := os.WriteFile(filepath.Join(dir, tag+".md"), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("AAAA1", "A group is a set with a product.\nIt has more.")
+	write("AAAA2", "Let $V$ be a vector space.\nA form on $V$ is a map.\nMore text.")
+	write("AAAA3", "This topic is a part of algebra.")
+	for tag, want := range map[string]string{
+		"AAAA1": "A group is a set with a product.",
+		"AAAA2": "Let $V$ be a vector space. A form on $V$ is a map.",
+		"AAAA3": "",
+		"AAAA4": "",
+	} {
+		if got := nodeSummary(root, tag); got != want {
+			t.Errorf("nodeSummary(%s) = %q, want %q", tag, got, want)
+		}
+	}
+}

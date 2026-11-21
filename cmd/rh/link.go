@@ -156,13 +156,20 @@ func nodeSummary(root, tag string) string {
 	if !ok {
 		return ""
 	}
+	// A summary can start with a setup sentence, such as "Let V be a vector space over C.". The setup sentences stay with the first sentence after them, because that sentence needs them.
+	var setup []string
 	for _, l := range strings.Split(string(body), "\n") {
 		l = strings.TrimSpace(l)
-		if strings.HasPrefix(l, "#") {
+		switch {
+		case strings.HasPrefix(l, "#"):
 			return ""
-		}
-		if l != "" {
-			return l
+		case l == "":
+		case strings.HasPrefix(l, "This topic is a part of"):
+			return ""
+		case strings.HasPrefix(l, "Let ") || strings.HasPrefix(l, "Fix ") || strings.HasPrefix(l, "Suppose "):
+			setup = append(setup, l)
+		default:
+			return strings.Join(append(setup, l), " ")
 		}
 	}
 	return ""
