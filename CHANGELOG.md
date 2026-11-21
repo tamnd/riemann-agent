@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.6.4 (2026-11-22)
+
+Written chapters for the Learn section, for milestone M6.
+
 ### Added
 
 - A learning path can have a written chapter, `paths/<id>.md`, next to `paths/<id>.yaml`. The site shows the chapter in place of the list that it makes from the items. The YAML file still gives the title, the order, the concept map and the links to the proof.
