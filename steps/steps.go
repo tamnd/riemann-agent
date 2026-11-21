@@ -32,6 +32,8 @@ type Step struct {
 	Routine  []string `yaml:"routine"`  // the Lean dependencies that the proof treats as routine
 	Open     []string `yaml:"open"`     // the Lean dependencies that the proof cites, but that have no step yet
 	Reviews  []Review `yaml:"reviews"`
+	// DraftedBy is <role>@<model> when a model wrote the draft (spec 09).
+	DraftedBy string `yaml:"drafted_by"`
 
 	File string `yaml:"-"` // the path in the content repository, with forward slashes
 	Body string `yaml:"-"` // the Markdown after the front matter

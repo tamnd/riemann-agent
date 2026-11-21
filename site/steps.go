@@ -256,6 +256,9 @@ func (b *builder) stepMarkdown(s *steps.Step, usedBy []string) string {
 	case "reviewed":
 		tail.WriteString("Reviewed. A person who works in the area agrees that the text is a correct and complete proof of the statement, given the steps that it cites.\n")
 	}
+	if s.DraftedBy != "" {
+		fmt.Fprintf(&tail, "\nA model wrote the first draft (`%s`). A person checks it before its status goes up.\n", s.DraftedBy)
+	}
 	for _, r := range s.Reviews {
 		fmt.Fprintf(&tail, "\n- %s, %s, %s.", r.Status, r.By, r.Date)
 		if r.Note != "" {
