@@ -51,3 +51,19 @@ func TestLink(t *testing.T) {
 		t.Errorf("the summaries do not read back: %v", err)
 	}
 }
+
+func TestExpandMacros(t *testing.T) {
+	m := map[string]string{`\C`: `\mathbb{C}`, `\abs`: `\left|#1\right|`, `\ip`: `\left\langle #1, #2\right\rangle`}
+	for in, want := range map[string]string{
+		`$z \in \C$`:             `$z \in \mathbb{C}$`,
+		`$1/\abs{x}$`:            `$1/\left|x\right|$`,
+		`$\abs{\abs{x}}$`:        `$\left|\left|x\right|\right|$`,
+		`$\ip{u}{v}$`:            `$\left\langle u, v\right\rangle$`,
+		`$\Cap \{a\} \abs$`:      `$\Cap \{a\} \abs$`,
+		`$\C_v$ and \abs{\{x\}}`: `$\mathbb{C}_v$ and \left|\{x\}\right|`,
+	} {
+		if got := expandMacros(in, m); got != want {
+			t.Errorf("expandMacros(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

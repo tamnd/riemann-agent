@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -107,12 +108,16 @@ func runLink(args []string, stdout, stderr io.Writer) error {
 	for _, e := range gl {
 		tags = append(tags, e.Math2)
 	}
+	macros, err := readMacros(*from)
+	if err != nil {
+		return err
+	}
 	for _, tag := range tags {
 		if tag == "" || out.Summaries[tag] != "" {
 			continue
 		}
 		if s := nodeSummary(*from, tag); s != "" {
-			out.Summaries[tag] = s
+			out.Summaries[tag] = expandMacros(s, macros)
 		} else if s := old.Summaries[tag]; s != "" {
 			out.Summaries[tag] = s
 		}
@@ -161,6 +166,108 @@ func nodeSummary(root, tag string) string {
 		}
 	}
 	return ""
+}
+
+// readMacros reads macros/m2.katex.json of the checkout: the TeX macros of Math 2.0, such as \\R and \\abs. It returns no macros and no error when the file does not exist.
+func readMacros(root string) (map[string]string, error) {
+	data, err := os.ReadFile(filepath.Join(root, "macros", "m2.katex.json")) // #nosec G304 -- a file of the math2 checkout
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]string
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, fmt.Errorf("rh link: macros/m2.katex.json: %w", err)
+	}
+	return m, nil
+}
+
+// expandMacros replaces each macro of Math 2.0 in s by its expansion, so that the site renders the summary with no macros. A macro with #1 and #2 takes its arguments from the groups in braces that follow it.
+func expandMacros(s string, macros map[string]string) string {
+	for range 5 {
+		next := expandOnce(s, macros)
+		if next == s {
+			break
+		}
+		s = next
+	}
+	return s
+}
+
+func expandOnce(s string, macros map[string]string) string {
+	var out strings.Builder
+	for i := 0; i < len(s); {
+		if s[i] != '\\' {
+			out.WriteByte(s[i])
+			i++
+			continue
+		}
+		j := i + 1
+		for j < len(s) && (s[j] >= 'a' && s[j] <= 'z' || s[j] >= 'A' && s[j] <= 'Z') {
+			j++
+		}
+		body, ok := macros[s[i:j]]
+		if j == i+1 || !ok {
+			if j == i+1 && j < len(s) {
+				j++ // an escaped symbol such as \\{
+			}
+			out.WriteString(s[i:j])
+			i = j
+			continue
+		}
+		n := 0
+		for k := 1; k <= 9 && strings.Contains(body, fmt.Sprintf("#%d", k)); k++ {
+			n = k
+		}
+		k := j
+		var args []string
+		for range n {
+			for k < len(s) && s[k] == ' ' {
+				k++
+			}
+			arg, end, ok := braceGroup(s, k)
+			if !ok {
+				break
+			}
+			args = append(args, arg)
+			k = end
+		}
+		if len(args) < n {
+			out.WriteString(s[i:j])
+			i = j
+			continue
+		}
+		for a := n; a >= 1; a-- {
+			body = strings.ReplaceAll(body, fmt.Sprintf("#%d", a), args[a-1])
+		}
+		out.WriteString(body)
+		i = k
+	}
+	return out.String()
+}
+
+// braceGroup returns the text inside the group in braces that starts at s[i], and the index after the group.
+func braceGroup(s string, i int) (string, int, bool) {
+	if i >= len(s) || s[i] != '{' {
+		return "", i, false
+	}
+	depth := 0
+	for k := i; k < len(s); k++ {
+		switch s[k] {
+		case '\\':
+			k++
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return s[i+1 : k], k + 1, true
+			}
+		}
+	}
+	return "", i, false
 }
 
 // conceptKey is the form of a name that rh link compares: lower case, with no plural s and no punctuation.
