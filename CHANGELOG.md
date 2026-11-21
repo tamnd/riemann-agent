@@ -14,6 +14,8 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 ### Changed
 
 - The generated page of a path no longer starts with the count of the concepts.
+- A written chapter of Part I starts with one line of prerequisites. A written guide of Part II starts with its own text. The page of the guide uses the lead as its description.
+- The list of guides on `learn/` names the chapter of the proof only when its title is not the title of the guide. The side bar says "what to read first" and "the chapter of the proof".
 
 ## v0.6.3 (2026-11-21)
 

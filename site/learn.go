@@ -83,17 +83,20 @@ func (b *builder) learnViews(chapters []*chapterInfo) {
 			Trail:       trail(p.Title),
 			markdown:    b.pathMarkdown(p, byID, bySlug),
 		}
+		if p.Body != "" && p.Lead != "" {
+			v.Description = p.Lead
+		}
 		v.Side = side(LearnURL(p.ID))
 		for _, c := range p.For {
 			if ci := bySlug[c]; ci != nil {
-				v.Side.Next = append(v.Side.Next, SideLink{Text: ci.Title, URL: ci.URL, Sub: "the chapter that this path prepares for"})
+				v.Side.Next = append(v.Side.Next, SideLink{Text: ci.Title, URL: ci.URL, Sub: "the chapter of the proof"})
 			}
 		}
 		v.Pager = &Pager{}
 		if i > 0 {
 			v.Pager.Prev = &SideLink{Text: b.learn[i-1].Title, URL: LearnURL(b.learn[i-1].ID)}
 		} else {
-			v.Pager.Prev = &SideLink{Text: "What to learn first", URL: "/learn/"}
+			v.Pager.Prev = &SideLink{Text: "Learn", URL: "/learn/"}
 		}
 		if i+1 < len(b.learn) {
 			v.Pager.Next = &SideLink{Text: b.learn[i+1].Title, URL: LearnURL(b.learn[i+1].ID)}
@@ -111,7 +114,7 @@ func (b *builder) learnViews(chapters []*chapterInfo) {
 				continue
 			}
 			for _, p := range b.pathsFor(c.Slug) {
-				v.Side.Needs = append(v.Side.Needs, SideLink{Text: p.Title, URL: LearnURL(p.ID), Sub: fmt.Sprintf("a path of %d concepts", len(p.Items))})
+				v.Side.Needs = append(v.Side.Needs, SideLink{Text: p.Title, URL: LearnURL(p.ID), Sub: "what to read first"})
 			}
 		}
 		if v.Path == "learn/" {
@@ -176,6 +179,14 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 			after = append(after, fmt.Sprintf("[%s](%s)", ci.Title, ci.URL))
 		}
 	}
+	if body := strings.TrimSpace(p.Body); body != "" {
+		// A written chapter says itself what to read first. Part I gives only the prerequisites.
+		if len(p.For) == 0 && len(before) > 0 {
+			fmt.Fprintf(&out, "Prerequisites: %s.\n\n", strings.Join(before, ", "))
+		}
+		out.WriteString(body + "\n")
+		return out.String()
+	}
 	if len(before) > 0 {
 		fmt.Fprintf(&out, "Read first: %s.\n\n", strings.Join(before, ", "))
 	}
@@ -185,10 +196,6 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 			word = "chapters"
 		}
 		fmt.Fprintf(&out, "This path prepares you for the %s %s.\n\n", word, strings.Join(after, ", "))
-	}
-	if body := strings.TrimSpace(p.Body); body != "" {
-		out.WriteString(body + "\n")
-		return out.String()
 	}
 	for i, it := range p.Items {
 		fmt.Fprintf(&out, "## %d. %s\n\n", i+1, it.Concept)
@@ -254,24 +261,27 @@ func (b *builder) learnList(bySlug map[string]*chapterInfo) string {
 			out.WriteString("## The paths\n\nEach path prepares for one or more chapters of the proof. A path that needs another path comes after it.\n\n")
 		}
 		for _, p := range guides {
+			// A guide usually has the title of its chapter. Name the chapter only when the titles differ.
 			var ch []string
 			for _, c := range p.For {
-				if ci := bySlug[c]; ci != nil {
-					ch = append(ch, ci.Title)
+				if ci := bySlug[c]; ci != nil && ci.Title != p.Title {
+					ch = append(ch, fmt.Sprintf("[%s](%s)", ci.Title, ci.URL))
 				}
 			}
 			fmt.Fprintf(&out, "1. [%s](%s)", p.Title, LearnURL(p.ID))
 			if len(ch) > 0 {
-				fmt.Fprintf(&out, ", for %s", strings.Join(ch, ", "))
+				fmt.Fprintf(&out, ", for %s", strings.Join(ch, " and "))
 			}
 			out.WriteString("\n")
 		}
 	}
-	out.WriteString("\nThe [concept map](/learn/map/) shows all the concepts by chapter.")
-	if len(b.glossary) > 0 {
-		out.WriteString(" The [glossary](/glossary/) gives the Lean names.")
+	if len(subjects) == 0 {
+		out.WriteString("\nThe [concept map](/learn/map/) shows all the concepts by chapter.")
+		if len(b.glossary) > 0 {
+			out.WriteString(" The [glossary](/glossary/) gives the Lean names.")
+		}
+		out.WriteString("\n")
 	}
-	out.WriteString("\n")
 	return out.String()
 }
 
