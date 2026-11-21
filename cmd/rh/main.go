@@ -40,6 +40,7 @@ func commands() []command {
 		{name: "check", summary: "check the written proof against the records, with the rules C1 to C6, P1 to P5 and G1 to G4", run: runCheck},
 		{name: "link", summary: "match the names of the proof with the nodes of Math 2.0", run: runLink},
 		{name: "draft", summary: "draft steps of the written proof with a model, within the budget of agent.yaml", run: runDraft},
+		{name: "report", summary: "write the agent report: the steps drafted, the steps accepted, the edit size and the cost", run: runReport},
 		{name: "deploy", summary: "upload the site to the Cloudflare Worker", milestone: "M0"},
 	}
 }

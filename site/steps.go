@@ -42,7 +42,49 @@ func (b *builder) readSteps() error {
 		b.lit[lit[i].Name] = &lit[i]
 		b.litList = append(b.litList, &lit[i])
 	}
+	if len(ss) > 0 && b.info != nil {
+		b.info.Trust.Checks = append(b.info.Trust.Checks, stepCheck(ss))
+	}
 	return nil
+}
+
+// checkedShare returns the number of steps with the status checked or reviewed.
+func checkedShare(ss []*steps.Step) int {
+	n := 0
+	for _, s := range ss {
+		if steps.Rank(s.Status) >= steps.Rank("checked") {
+			n++
+		}
+	}
+	return n
+}
+
+// shareText tells how many of the steps a person has checked.
+func shareText(ss []*steps.Step) string {
+	n, all := checkedShare(ss), len(ss)
+	switch {
+	case all == 1 && n == 1:
+		return "The one step is checked or reviewed."
+	case all == 1:
+		return "The one step is drafted. No person has checked it yet."
+	case n == all:
+		return fmt.Sprintf("All %d steps are checked or reviewed.", all)
+	case n == 0:
+		return fmt.Sprintf("All %d steps are drafted. No person has checked them yet.", all)
+	}
+	return fmt.Sprintf("%d of the %d steps (%d%%) are checked or reviewed. The other %d are drafted.", n, all, n*100/all, all-n)
+}
+
+// stepCheck is the line of the trust report for the written steps.
+func stepCheck(ss []*steps.Step) TrustCheck {
+	c := TrustCheck{ID: "steps", Question: "Has a person checked the written steps against the Lean code?", State: "open", Note: shareText(ss)}
+	switch checkedShare(ss) {
+	case len(ss):
+		c.State = "yes"
+	case 0:
+		c.State = "no"
+	}
+	return c
 }
 
 // orderSteps puts the steps of each chapter in the order of the steps list of the chapter, and then the other steps of the chapter by id.
@@ -270,11 +312,16 @@ func (b *builder) stepMarkdown(s *steps.Step, usedBy []string) string {
 
 func (b *builder) stepList(chapters []*chapterInfo) string {
 	var out strings.Builder
+	out.WriteString(shareText(b.steps) + " A drafted step follows the Lean code, but no person has checked it yet. The [trust report](/trust/) tells what the other checks found.\n\n")
 	for _, c := range chapters {
 		if len(c.Steps) == 0 {
 			continue
 		}
-		fmt.Fprintf(&out, "## [%s](%s)\n\n", c.Title, c.URL)
+		var cs []*steps.Step
+		for _, id := range c.Steps {
+			cs = append(cs, b.stepByID[id])
+		}
+		fmt.Fprintf(&out, "## [%s](%s)\n\n%s\n\n", c.Title, c.URL, shareText(cs))
 		for _, id := range c.Steps {
 			s := b.stepByID[id]
 			fmt.Fprintf(&out, "1. [%s](%s), `%s`, %s.\n", s.Title, StepURL(id), s.Decl, s.Status)

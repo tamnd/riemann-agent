@@ -209,3 +209,32 @@ func TestLoadConfig(t *testing.T) {
 		t.Fatal("an unknown role must fail")
 	}
 }
+
+func TestReport(t *testing.T) {
+	day := time.Date(2026, 11, 20, 0, 0, 0, 0, time.UTC)
+	l := &Ledger{Entries: []Entry{
+		{Time: day.Add(time.Hour), Role: "prover", Cost: 0.5, File: "proof/steps/a.md"},
+		{Time: day.Add(2 * time.Hour), Role: "prover", Cost: 0.25, Error: "no title"},
+		{Time: day.Add(-48 * time.Hour), Role: "namer", Cost: 9},
+	}}
+	ss := []*steps.Step{
+		{ID: "b", File: "proof/steps/b.md", Status: "checked", DraftedBy: "prover@m"},
+		{ID: "a", File: "proof/steps/a.md", Status: "drafted", DraftedBy: "prover@m"},
+		{ID: "c", File: "proof/steps/c.md", Status: "reviewed"},
+	}
+	edit := func(f string) (Edit, error) { return Edit{Added: len(f), Deleted: 1}, nil }
+	r, err := MakeReport(l, ss, day, day.Add(24*time.Hour), edit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Calls != 2 || r.Failed != 1 || r.NewDrafts != 1 || r.Cost != 0.75 || len(r.Drafted) != 2 || r.Accepted() != 1 || r.Drafted[0].ID != "a" {
+		t.Fatalf("report = %+v", r)
+	}
+	var b strings.Builder
+	r.Write(&b)
+	for _, want := range []string{"2026-11-20 to 2026-11-20", "made 2 calls, and 1 of them failed", "$0.75", "People accepted 1 of them", "| b | prover@m | checked | 16 | 1 |"} {
+		if !strings.Contains(b.String(), want) {
+			t.Errorf("the report has no %q:\n%s", want, b.String())
+		}
+	}
+}

@@ -11,6 +11,8 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - The package `prompts` holds the prompts of the roles prover, namer, stater, linker, chapterer and pathfinder. Each prompt has a version, and each draft records the prompt that made it.
 - The file `agent.yaml` in the content repo sets the models and the budget per day and per run. With no file, the budget is zero and `rh draft` sends no request. Each call goes to `agent/ledger.jsonl` with its tokens and its cost.
 - `rh` can write a step file. The fields keep the same order in each file.
+- `rh report` writes the agent report of spec 09.4 as Markdown. It gives the calls, the failed calls and the cost of the last 7 days from `agent/ledger.jsonl`, the cost of each role, the steps that a model drafted, the steps that people accepted, and the lines that people added and deleted in each drafted file since the commit that added it. The flag `-days` sets the window, and `-until` sets the last day.
+- The trust report and the home page have a line for the written steps. It tells how many steps are checked or reviewed. The list of the steps gives the same share for all the steps and for each chapter.
 
 ## v0.5.0 (2026-11-21)
 
