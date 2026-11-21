@@ -14,7 +14,7 @@ Milestone M1, the map.
 - Each declaration page now has a plain reading of the statement. The package `lean/read` reads the Lean signature without Lean and gives what the statement takes, what it assumes and what it gives, in words. The page also shows the chain of declarations from `riemannHypothesis` down to it, the list of its parts in the dominator tree with the largest part first, and links to the previous and the next part of the same parent. A long list of parts shows 100 rows first and a button shows the rest.
 
 - The proof pages have a list of all chapters in reading order in the side panel, and links to the chapter before and the chapter after at the bottom of each chapter.
-
+- The names in the side panel "In Lean" link to the declaration pages of the site when the build has the records. Those pages link to the source line.
 ### Changed
 
 - The shards in `api/` are gzip files. The browser decompresses them. The site is now 416 MB and 5,340 files, below the limits of the Cloudflare static assets.

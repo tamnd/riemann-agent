@@ -313,7 +313,12 @@ func (b *builder) side(f Front) *Side {
 		if l.Line > 0 {
 			where = fmt.Sprintf("%s, line %d", where, l.Line)
 		}
-		s.Lean = append(s.Lean, SideLink{Name: l.Name, URL: b.leanURL(l.File, l.Line), Where: where})
+		link := SideLink{Name: l.Name, URL: b.leanURL(l.File, l.Line), Where: where}
+		if b.code != nil {
+			// The declaration page has the statement, the reading and the chain, and it links to the source line.
+			link.URL = DeclURL(l.Name)
+		}
+		s.Lean = append(s.Lean, link)
 	}
 	for _, n := range f.Needs {
 		s.Needs = append(s.Needs, b.need(n))
