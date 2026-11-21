@@ -229,6 +229,14 @@
       ])
     ]);
     box.appendChild(head);
+    if (r.st) box.appendChild(el("p", { class: "callout" }, ["This declaration has a step page with its statement in standard notation and its proof in words: ", el("a", { href: "/step/" + r.st[0] + "/" }, [r.st[1]]), "."]));
+    if (r.lt) {
+      var lit = el("section", {}, [el("h2", {}, ["In the literature"]), el("p", {}, ["The name points to " + r.lt.r + ". " + (r.lt.h ? "The proof reads the hypothesis structure." : "The proof does not read the hypothesis structure. The code proves the statement from other declarations.")])]);
+      if (r.lt.s) lit.appendChild(el("p", {}, [r.lt.s]));
+      if (r.lt.c) lit.appendChild(el("ul", {}, r.lt.c.map(function (c) { return el("li", {}, [c[1] ? el("a", { href: c[1] }, [c[0]]) : c[0]]); })));
+      lit.appendChild(el("p", {}, [el("a", { href: "/proof/named-results/" }, ["All named results"])]));
+      box.appendChild(lit);
+    }
     var rd = reading(r);
     if (rd) box.appendChild(rd);
     if (r.s) box.appendChild(el("section", {}, [el("h2", {}, ["The Lean statement"]), el("pre", { class: "sig" }, [el("code", {}, [r.k + " " + r.n + " " + r.s])])]));

@@ -25,6 +25,7 @@ import (
 	"github.com/tamnd/math2-agent/markup"
 
 	"github.com/tamnd/riemann-agent/index"
+	"github.com/tamnd/riemann-agent/steps"
 )
 
 //go:embed templates/*.html
@@ -111,11 +112,13 @@ type SideLink struct {
 
 // Side is the side panel of a proof page.
 type Side struct {
-	Contents []SideLink // the chapters of the proof, in reading order
-	Lean     []SideLink
-	Needs    []SideLink
-	UsedBy   []SideLink
-	Next     []SideLink
+	Contents   []SideLink // the chapters of the proof, in reading order
+	Steps      []SideLink // the steps of the chapter
+	StepsTitle string
+	Lean       []SideLink
+	Needs      []SideLink
+	UsedBy     []SideLink
+	Next       []SideLink
 }
 
 // Pager links a chapter to the chapter before it and the chapter after it.
@@ -140,6 +143,7 @@ type view struct {
 	Status      string
 	Section     string
 	Trail       []Crumb
+	Levels      []Crumb // the level switch: overview, chapter, step, Lean
 	Side        *Side
 	Pager       *Pager
 	Home        *HomeData
@@ -199,6 +203,13 @@ type builder struct {
 	code  *Code
 	spine map[string]*index.SpineNode
 	paths map[string]string
+
+	steps      []*steps.Step
+	stepByID   map[string]*steps.Step
+	stepOfDecl map[string]*steps.Step
+	chapterOf  map[string]*chapterInfo
+	lit        map[string]*steps.Named
+	litList    []*steps.Named
 }
 
 // Build builds the site in opt.Out.
@@ -244,6 +255,9 @@ func Build(ctx context.Context, opt Options) (*Result, error) {
 	}
 	b.md = markup.New(b.math)
 	if err := b.codeData(); err != nil {
+		return nil, err
+	}
+	if err := b.readSteps(); err != nil {
 		return nil, err
 	}
 	if err := b.collect(); err != nil {
@@ -407,13 +421,26 @@ func (b *builder) collect() error {
 	sort.Strings(chapters)
 	var docs []doc
 	var toc []SideLink
+	var infos []*chapterInfo
 	for _, f := range chapters {
 		d, err := readDoc(b.opt.Content, "proof/"+filepath.Base(f))
 		if err != nil {
 			return fmt.Errorf("site: %w", err)
 		}
 		docs = append(docs, d)
-		toc = append(toc, SideLink{Text: d.Front.Title, URL: "/" + chapterPath(filepath.Base(f)), Sub: d.Front.Level})
+		p := chapterPath(filepath.Base(f))
+		toc = append(toc, SideLink{Text: d.Front.Title, URL: "/" + p, Sub: d.Front.Level})
+		info := &chapterInfo{Slug: strings.TrimSuffix(strings.TrimPrefix(p, "proof/"), "/"), Title: d.Front.Title, URL: "/" + p, Steps: append([]string(nil), d.Front.Steps...)}
+		if len(d.Front.Lean) > 0 && b.code != nil {
+			info.Lean = DeclURL(d.Front.Lean[0].Name)
+		}
+		if info.Slug == "" {
+			info.Slug = "overview"
+		}
+		infos = append(infos, info)
+	}
+	if err := b.orderSteps(infos); err != nil {
+		return err
 	}
 	for i, d := range docs {
 		v := b.docView(d)
@@ -434,13 +461,29 @@ func (b *builder) collect() error {
 				v.Pager.Next = &toc[i+1]
 			}
 		}
+		info := infos[i]
+		for _, id := range info.Steps {
+			v.Side.Steps = append(v.Side.Steps, SideLink{Text: b.stepByID[id].Title, URL: StepURL(id)})
+		}
+		v.Side.StepsTitle = "The steps of this chapter"
+		first := ""
+		if len(info.Steps) > 0 {
+			first = StepURL(info.Steps[0])
+		}
 		if v.Path == "proof/" {
 			v.Trail = []Crumb{{Text: "Home", URL: "/"}, {Text: "Proof", Current: true}}
+			next := ""
+			if len(infos) > 1 {
+				next = infos[1].URL
+			}
+			v.Levels = levels(0, next, first, info.Lean)
 		} else {
 			v.Trail = []Crumb{{Text: "Home", URL: "/"}, {Text: "Proof", URL: "/proof/"}, {Text: d.Front.Title, Current: true}}
+			v.Levels = levels(1, "", first, info.Lean)
 		}
 		b.add(v)
 	}
+	b.stepViews(infos)
 	if err := b.timeline(); err != nil {
 		return err
 	}

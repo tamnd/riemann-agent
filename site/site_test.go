@@ -75,6 +75,24 @@ func TestBuild(t *testing.T) {
 			t.Errorf("proof/index.html has no %s", want)
 		}
 	}
+	step := read(t, out, "step/top/index.html")
+	for _, want := range []string{"The top statement.", "<h2 id=\"lean\">Lean</h2>", `href="/step/low/"`, `class="levels"`, "L2 Step", "Drafted."} {
+		if !strings.Contains(step, want) {
+			t.Errorf("step/top/index.html has no %s", want)
+		}
+	}
+	if low := read(t, out, "step/low/index.html"); !strings.Contains(low, "checked, A Person, 2026-11-21") || !strings.Contains(low, `href="/step/top/"`) {
+		t.Error("step/low/index.html has no review or no used-by link")
+	}
+	if list := read(t, out, "step/index.html"); !strings.Contains(list, `href="/step/top/"`) {
+		t.Error("step/index.html does not list the steps")
+	}
+	if named := read(t, out, "proof/named-results/index.html"); !strings.Contains(named, `href="https://doi.org/10.1000/x"`) {
+		t.Error("the named results page has no citation link")
+	}
+	if !strings.Contains(proof, `href="/step/top/"`) {
+		t.Error("the overview does not list its steps")
+	}
 	if !strings.Contains(read(t, out, "proof/timeline/index.html"), `<a href="/proof/">overview</a>`) {
 		t.Error("the timeline does not link the overview")
 	}

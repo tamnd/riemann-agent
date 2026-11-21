@@ -36,6 +36,7 @@ type Front struct {
 	Lean        []LeanRef `yaml:"lean"`
 	Needs       []Need    `yaml:"needs"`
 	Next        []Need    `yaml:"next"`
+	Steps       []string  `yaml:"steps"` // the step files of a chapter, in reading order
 }
 
 // Door is an entry point on the home page, for one kind of reader.

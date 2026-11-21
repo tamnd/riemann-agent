@@ -103,6 +103,16 @@ type declRecord struct {
 	R  *leanread.Reading `json:"r,omitempty"`  // the plain reading of the statement
 	T  []string          `json:"t,omitempty"`  // the nearest dominators, from the top down, with the immediate dominator last
 	PK [][2]any          `json:"pk,omitempty"` // the parts: the declarations that this one dominates directly, with their sizes, the largest first
+	ST []string          `json:"st,omitempty"` // the step page that explains the declaration: its id and its title
+	LT *litRecord        `json:"lt,omitempty"` // the entry of links/literature.yaml
+}
+
+// litRecord is a named result on its declaration page.
+type litRecord struct {
+	R string      `json:"r"`           // the name in the literature
+	S string      `json:"s,omitempty"` // what the Lean statement says
+	H bool        `json:"h,omitempty"` // the proof reads the hypothesis structure
+	C [][2]string `json:"c,omitempty"` // the citations: the text and the link
 }
 
 // spineFact is the place of a declaration on the spine.
@@ -305,6 +315,16 @@ func (b *builder) codeFiles(w *writer) {
 		}
 		if index.IsLiterature(d.Name) {
 			r.C = "literature"
+		}
+		if st, ok := b.stepOfDecl[d.Name]; ok {
+			r.ST = []string{st.ID, st.Title}
+		}
+		if l, ok := b.lit[d.Name]; ok {
+			r.C = "literature"
+			r.LT = &litRecord{R: l.Result, S: l.Says, H: l.ReadsHypothesis}
+			for _, c := range l.Cite {
+				r.LT.C = append(r.LT.C, [2]string{fmt.Sprintf("%s. %s. %s, %d.", strings.Join(c.Authors, ", "), strings.TrimSuffix(c.Title, "."), c.Venue, c.Year), c.Link()})
+			}
 		}
 		rd := leanread.Read(d.Kind, d.Name, d.Sig)
 		r.R = &rd

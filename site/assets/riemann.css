@@ -117,3 +117,11 @@ button.more:hover { opacity: 1; }
 .pager.chapters a { display: flex; flex-direction: column; max-width: 48%; text-decoration: none; }
 .pager.chapters a[rel=next] { text-align: right; margin-left: auto; }
 .pager.chapters .small { color: var(--muted, #777); font-size: .8rem; }
+
+/* The level switch: overview, chapter, step, Lean. */
+.levels { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 1rem; margin: .25rem 0 1rem; font-size: .9rem; }
+.levels ol { display: flex; flex-wrap: wrap; gap: .25rem; list-style: none; margin: 0; padding: 0; }
+.levels li a, .levels li span[aria-current], .levels li .none { display: inline-block; padding: .1rem .6rem; border: 1px solid var(--rule, #ccc); border-radius: 999px; text-decoration: none; }
+.levels li span[aria-current] { background: var(--ink, #222); color: var(--paper, #fff); border-color: var(--ink, #222); }
+.levels li .none { opacity: .45; }
+.callout { border-left: 3px solid var(--accent, #2a6); padding: .5rem .9rem; background: var(--soft, #f4f7f4); }

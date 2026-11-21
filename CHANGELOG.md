@@ -2,6 +2,16 @@
 
 All changes that a user can see are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- `rh check` checks the written proof against the records. It reads the step files in `proof/steps/` of the content repository and the named results in `links/literature.yaml`, and it applies the rules C1 to C6 of spec 05 and the rule L1. It prints each problem and a summary with the number of steps at each status and the number of dependencies that have no step yet.
+- The step pages. `rh site build` makes a page at `/step/<id>/` for each step file, with the statement, the Lean statement, the proof, the steps that it uses, the steps that use it, the concepts that it needs and its status with the reviews. A chapter lists its steps in the side panel in the order of its `steps` field, and each step links to the step before and the step after in the chapter.
+- The page `/step/` lists all steps by chapter, and the page `/proof/named-results/` lists the published results that the proof uses, with the citations.
+- A row of links "Level of detail" on the proof pages goes from the overview to the chapter, the step and the Lean declaration.
+- A declaration page that has a step links to it, and a declaration that is a named result shows what it says and where it is published.
+
 ## v0.2.1 (2026-11-21)
 
 ### Changed
