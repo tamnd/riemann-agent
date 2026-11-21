@@ -20,7 +20,7 @@ type Entry struct {
 	Math   string `yaml:"math"`   // the usual notation, in TeX
 	Math2  string `yaml:"math2"`  // the tag of the Math 2.0 node, when there is one
 	Step   string `yaml:"step"`   // the id of the step that explains it
-	Status string `yaml:"status"` // drafted, checked or reviewed
+	Status string `yaml:"status"` // open when the meaning is not known yet, or drafted, checked or reviewed
 }
 
 // LoadGlossary reads glossary/names.yaml. It returns no entries and no error when the file does not exist.
@@ -46,7 +46,7 @@ func LoadGlossary(root string) ([]Entry, error) {
 //	G1: each name is in the file once, and has a text.
 //	G2: the name is a declaration of the records with that kind, or a name space of declarations.
 //	G3: the tag of Math 2.0 exists.
-//	G4: the step exists, and the status is known.
+//	G4: the step exists, and the status is open or a status of a step.
 func CheckGlossary(es []Entry, ss []*Step, env Env) []Problem {
 	const file = "glossary/names.yaml"
 	var out []Problem
@@ -88,7 +88,7 @@ func CheckGlossary(es []Entry, ss []*Step, env Env) []Problem {
 		if e.Step != "" && stepIDs[e.Step] == nil {
 			add("G4", "%s: the step %q does not exist", e.Name, e.Step)
 		}
-		if e.Status != "" && Rank(e.Status) < 0 {
+		if e.Status != "" && e.Status != "open" && Rank(e.Status) < 0 {
 			add("G4", "%s: the status %q is not known", e.Name, e.Status)
 		}
 	}

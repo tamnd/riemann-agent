@@ -295,6 +295,9 @@ func (b *builder) glossaryMarkdown() string {
 		if e.Kind != "" {
 			meta = append(meta, e.Kind)
 		}
+		if e.Status == "open" {
+			meta = append(meta, "the meaning is not known yet")
+		}
 		out.WriteString(strings.Join(meta, ", ") + ".\n\n")
 		out.WriteString(strings.TrimSpace(e.Says) + "\n\n")
 		var refs []string
