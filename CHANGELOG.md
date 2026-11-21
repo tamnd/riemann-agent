@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.5.1 (2026-11-21)
+
+The first part of milestone M5: the model client, `rh draft` and `rh report`.
+
 ### Added
 
 - `rh draft` drafts steps of the written proof with a model. It takes Lean names or step ids, or `-queue N` for the next N open names in the order of the spine. For each name it sends the Lean text, the direct dependencies with their glossary text and signatures, and the matching glossary names. It writes the step with the status `drafted`, the fields `drafted_by` and `prompt`, and the fields `uses`, `routine` and `open` from the dependencies. Then it moves the name from `open` to `uses` in the parent steps. The flag `-n` prints the prompts and the cost estimate and sends nothing. The flag `-pr` opens a pull request with the label `agent-draft`.
