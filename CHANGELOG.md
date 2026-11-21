@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.6.3 (2026-11-21)
+
+One more check for milestone M2.
+
 ### Added
 
 - `rh trust` checks the type of each theorem of `Main`. The Lean file prints the type from the built environment, and the type must be the expected Prop, for example `RiemannHypothesis` for `riemannHypothesis`. A wrong type fails the check, and `records/axioms.json` has the new fields `type`, `want` and `type_ok`. This is the last check of the review of the statements: it shows that no file of the release changed the meaning of the names in `Main.lean`.
