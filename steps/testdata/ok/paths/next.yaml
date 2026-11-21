@@ -5,4 +5,5 @@ needs: [base]
 items:
   - concept: Theta lifts
     proposal: https://github.com/tamnd/math2/issues/1
-    text: A way to move forms between groups.
+    says: A way to move forms between groups.
+    why: The proof lifts forms.

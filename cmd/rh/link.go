@@ -47,7 +47,7 @@ func runLink(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	out := &steps.Links{Decls: map[string]string{}, Concepts: map[string]string{}}
+	out := &steps.Links{Decls: map[string]string{}, Concepts: map[string]string{}, Summaries: map[string]string{}}
 	dropped := 0
 	for d, tag := range found {
 		if _, ok := m.Lookup(tag); ok {
@@ -94,7 +94,30 @@ func runLink(args []string, stdout, stderr io.Writer) error {
 			}
 		}
 	}
-	fmt.Fprintf(stdout, "%d Lean names with a node in Math 2.0 (%d with a tag that the index does not have, %d not read), %d kept from the file, %d concepts filled, %d concepts with no node\n", len(out.Decls), dropped, bad, kept, filled, len(missing))
+	gl, err := steps.LoadGlossary(*content)
+	if err != nil {
+		return err
+	}
+	var tags []string
+	for _, p := range paths {
+		for _, it := range p.Items {
+			tags = append(tags, out.Concept(it))
+		}
+	}
+	for _, e := range gl {
+		tags = append(tags, e.Math2)
+	}
+	for _, tag := range tags {
+		if tag == "" || out.Summaries[tag] != "" {
+			continue
+		}
+		if s := nodeSummary(*from, tag); s != "" {
+			out.Summaries[tag] = s
+		} else if s := old.Summaries[tag]; s != "" {
+			out.Summaries[tag] = s
+		}
+	}
+	fmt.Fprintf(stdout, "%d Lean names with a node in Math 2.0 (%d with a tag that the index does not have, %d not read), %d kept from the file, %d concepts filled, %d concepts with no node, %d summaries\n", len(out.Decls), dropped, bad, kept, filled, len(missing), len(out.Summaries))
 	for _, s := range missing {
 		fmt.Fprintln(stdout, "  no node:", s)
 	}
@@ -106,6 +129,38 @@ func runLink(args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 	return os.WriteFile(filepath.Join(dir, "math2.yaml"), out.Marshal(), 0o600)
+}
+
+// nodeSummary returns the first line of the section Summary of the node file of tag, or "" when the checkout has no such file. A line of a summary is one sentence.
+func nodeSummary(root, tag string) string {
+	if len(tag) < 3 || strings.ContainsAny(tag, "/\\.") {
+		return ""
+	}
+	data, err := os.ReadFile(filepath.Join(root, "nodes", tag[:3], tag+".md")) // #nosec G304 -- a file of the math2 checkout
+	if err != nil {
+		// An old checkout can put the file in another directory.
+		m, _ := filepath.Glob(filepath.Join(root, "nodes", "*", tag+".md"))
+		if len(m) != 1 {
+			return ""
+		}
+		if data, err = os.ReadFile(m[0]); err != nil { // #nosec G304 -- a file of the math2 checkout
+			return ""
+		}
+	}
+	_, body, ok := bytes.Cut(data, []byte("\n## Summary\n"))
+	if !ok {
+		return ""
+	}
+	for _, l := range strings.Split(string(body), "\n") {
+		l = strings.TrimSpace(l)
+		if strings.HasPrefix(l, "#") {
+			return ""
+		}
+		if l != "" {
+			return l
+		}
+	}
+	return ""
 }
 
 // conceptKey is the form of a name that rh link compares: lower case, with no plural s and no punctuation.

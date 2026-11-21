@@ -39,8 +39,8 @@ func TestPathsAndGlossary(t *testing.T) {
 
 func TestPathRules(t *testing.T) {
 	ps := []*Path{
-		{ID: "a", File: "paths/b.yaml", For: []string{"none"}, Needs: []string{"c"}, Items: []Item{{Math2: "ZZZZ", Steps: []string{"nope"}}, {Concept: "x", Text: "t"}}},
-		{ID: "c", File: "paths/c.yaml", Title: "C", Needs: []string{"a"}, Items: []Item{{Concept: "y", Text: "t", Math2: "AAAA"}}},
+		{ID: "a", File: "paths/b.yaml", For: []string{"none"}, Needs: []string{"c"}, Items: []Item{{Math2: "ZZZZ", Steps: []string{"nope"}}, {Concept: "x", Why: "w"}}},
+		{ID: "c", File: "paths/c.yaml", Title: "C", Needs: []string{"a"}, Items: []Item{{Concept: "y", Why: "w", Math2: "AAAA"}}},
 	}
 	got := CheckPaths(ps, []string{"trunk"}, nil, env())
 	var rules []string

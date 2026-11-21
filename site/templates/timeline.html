@@ -9,9 +9,9 @@
 {{.Body}}
 </div>
 <table class="list timeline">
-  <thead><tr><th scope="col">#</th><th scope="col">Date</th><th scope="col">Step</th><th scope="col">Chapter</th></tr></thead>
+  <thead><tr><th scope="col">#</th><th scope="col">Date</th><th scope="col">Step</th><th scope="col">Chapter</th><th scope="col">Learn</th></tr></thead>
   <tbody>
-  {{range .Timeline}}<tr><td>{{.N}}</td><td>{{.Date}}</td><td>{{.HTML}}</td><td>{{if .Chapter}}<a href="{{url .Link}}">{{.Chapter}}</a>{{else}}<span class="muted">later</span>{{end}}</td></tr>
+  {{range .Timeline}}<tr><td>{{.N}}</td><td>{{.Date}}</td><td>{{.HTML}}</td><td>{{if .Chapter}}<a href="{{url .Link}}">{{.ChapterTitle}}</a>{{else}}<span class="muted">none yet</span>{{end}}</td><td>{{if .Path}}<a href="{{url .PathURL}}">{{.PathTitle}}</a>{{end}}</td></tr>
   {{end}}
   </tbody>
 </table>

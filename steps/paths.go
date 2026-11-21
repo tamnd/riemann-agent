@@ -32,7 +32,8 @@ type Item struct {
 	// Math2 is the tag of the Math 2.0 node. It is empty when Math 2.0 has no node yet, and then Proposal tells where the node is proposed.
 	Math2    string   `yaml:"math2"`
 	Proposal string   `yaml:"proposal"`
-	Text     string   `yaml:"text"`  // what the concept is, in a few sentences
+	Says     string   `yaml:"says"`  // what the concept is, in one sentence; for a concept with a node, the site shows the summary of the node
+	Text     string   `yaml:"text"`  // a standard text to learn it from: a book or a paper, with the section
 	Why      string   `yaml:"why"`   // where the proof uses it
 	Steps    []string `yaml:"steps"` // the ids of the steps that use it
 }
@@ -86,7 +87,7 @@ func Chapters(root string) ([]string, error) {
 //
 //	P1: the id is the name of the file, and the path has a title and items.
 //	P2: each chapter of For exists, and each path of Needs exists, with no cycle.
-//	P3: each item has a concept and a text.
+//	P3: each item has a concept and says where the proof uses it.
 //	P4: the tag of Math 2.0 exists, or the item has a proposal.
 //	P5: each step of an item exists.
 func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem {
@@ -132,8 +133,8 @@ func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem
 				name = fmt.Sprintf("item %d", i+1)
 				add("P3", "%s has no concept", name)
 			}
-			if strings.TrimSpace(it.Text) == "" {
-				add("P3", "%s has no text", name)
+			if strings.TrimSpace(it.Why) == "" {
+				add("P3", "%s does not say where the proof uses it (the field why)", name)
 			}
 			switch {
 			case it.Math2 != "" && env.Tag != nil && !env.Tag(it.Math2):

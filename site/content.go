@@ -77,6 +77,9 @@ type TimelineEntry struct {
 	Date    string `yaml:"date"`
 	Text    string `yaml:"text"`
 	Chapter string `yaml:"chapter"`
+	Path    string `yaml:"path"` // the id of the learning path with the background of the step
+
+	ChapterTitle, PathTitle string `yaml:"-"` // set by the build
 
 	HTML template.HTML `yaml:"-"` // Text, rendered by the build
 }
@@ -232,6 +235,9 @@ func sitePages(root string) ([]string, error) {
 func (e TimelineEntry) Link() string {
 	return chapterPath(e.Chapter + ".md")
 }
+
+// PathURL returns the path of the page of the learning path of the step.
+func (e TimelineEntry) PathURL() string { return strings.TrimPrefix(LearnURL(e.Path), "/") }
 
 func readJSON(path string, v any) error {
 	data, err := os.ReadFile(path) // #nosec G304 -- an input file of the build

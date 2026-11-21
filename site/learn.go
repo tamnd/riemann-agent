@@ -177,17 +177,27 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 	fmt.Fprintf(&out, "The path has %d concepts. Learn them in order. Mark a concept as known when you know it, and the mark stays in this browser.\n\n", len(p.Items))
 	for i, it := range p.Items {
 		fmt.Fprintf(&out, "## %d. %s\n\n", i+1, it.Concept)
-		out.WriteString(strings.TrimSpace(it.Text) + "\n\n")
+		tag := b.links.Concept(it)
+		says := strings.TrimSpace(it.Says)
+		if says == "" && b.links != nil {
+			says = b.links.Summaries[tag]
+		}
+		if says != "" {
+			out.WriteString(says + "\n\n")
+		}
 		if w := strings.TrimSpace(it.Why); w != "" {
 			out.WriteString("**Where the proof uses it.** " + w + "\n\n")
 		}
 		var refs []string
-		if tag := b.links.Concept(it); tag != "" {
+		if tag != "" {
 			refs = append(refs, "Learn it in Math 2.0: [["+it.Concept+"|"+tag+"]].")
 		} else if it.Proposal != "" {
 			refs = append(refs, fmt.Sprintf("Math 2.0 has no node for it yet. The [proposal](%s) asks for one.", it.Proposal))
 		} else {
 			refs = append(refs, "Math 2.0 has no node for it yet.")
+		}
+		if t := strings.TrimSpace(it.Text); t != "" {
+			refs = append(refs, "A standard text: "+strings.TrimSuffix(t, ".")+".")
 		}
 		if len(it.Steps) > 0 {
 			var ls []string

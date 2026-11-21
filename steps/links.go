@@ -18,11 +18,13 @@ import (
 type Links struct {
 	Decls    map[string]string `yaml:"decls"`
 	Concepts map[string]string `yaml:"concepts"`
+	// Summaries holds the first sentence of the summary of each Math 2.0 node that a path or the glossary uses, by tag. rh link copies it, so the site can define a concept without a request to Math 2.0.
+	Summaries map[string]string `yaml:"summaries"`
 }
 
 // LoadLinks reads links/math2.yaml. It returns empty tables and no error when the file does not exist.
 func LoadLinks(root string) (*Links, error) {
-	l := &Links{Decls: map[string]string{}, Concepts: map[string]string{}}
+	l := &Links{Decls: map[string]string{}, Concepts: map[string]string{}, Summaries: map[string]string{}}
 	data, err := os.ReadFile(filepath.Join(root, "links", "math2.yaml")) // #nosec G304 -- a file of the content repository
 	if errors.Is(err, fs.ErrNotExist) {
 		return l, nil
@@ -40,6 +42,9 @@ func LoadLinks(root string) (*Links, error) {
 	}
 	if l.Concepts == nil {
 		l.Concepts = map[string]string{}
+	}
+	if l.Summaries == nil {
+		l.Summaries = map[string]string{}
 	}
 	return l, nil
 }
@@ -60,7 +65,7 @@ const linksHeader = `# The links from Lean names and from the concepts of the pa
 func (l *Links) Marshal() []byte {
 	var b bytes.Buffer
 	b.WriteString(linksHeader)
-	write := func(name string, m map[string]string) {
+	write := func(name string, m map[string]string, value func(string) string) {
 		if len(m) == 0 {
 			fmt.Fprintf(&b, "%s: {}\n", name)
 			return
@@ -72,11 +77,13 @@ func (l *Links) Marshal() []byte {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			fmt.Fprintf(&b, "  %s: %s\n", yamlKey(k), m[k])
+			fmt.Fprintf(&b, "  %s: %s\n", yamlKey(k), value(m[k]))
 		}
 	}
-	write("decls", l.Decls)
-	write("concepts", l.Concepts)
+	plain := func(s string) string { return s }
+	write("decls", l.Decls, plain)
+	write("concepts", l.Concepts, plain)
+	write("summaries", l.Summaries, func(s string) string { return "'" + strings.ReplaceAll(s, "'", "''") + "'" })
 	return b.Bytes()
 }
 

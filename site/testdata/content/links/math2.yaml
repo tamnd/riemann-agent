@@ -1,3 +1,5 @@
 decls: {}
 concepts:
   Dirichlet L-function: 9D2Z543EJQ
+summaries:
+  9D2Z543EJQ: 'A Dirichlet L-function is the series of a character.'

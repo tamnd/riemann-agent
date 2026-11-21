@@ -580,8 +580,23 @@ func (b *builder) write() (*Result, error) {
 	defer func() { _ = root.Close() }()
 	w := &writer{root: root}
 
+	titles := map[string]string{}
+	for _, v := range b.views {
+		titles[v.Path] = v.Title
+	}
 	for _, v := range b.views {
 		for i := range v.Timeline {
+			e := &v.Timeline[i]
+			if e.Chapter != "" {
+				if e.ChapterTitle = titles[e.Link()]; e.ChapterTitle == "" {
+					return nil, fmt.Errorf("site: timeline step %d: the chapter %q does not exist", e.N, e.Chapter)
+				}
+			}
+			if e.Path != "" {
+				if e.PathTitle = titles[e.PathURL()]; e.PathTitle == "" {
+					return nil, fmt.Errorf("site: timeline step %d: the path %q does not exist", e.N, e.Path)
+				}
+			}
 			h, err := b.render(v.Timeline[i].Text)
 			if err != nil {
 				return nil, fmt.Errorf("site: timeline step %d: %w", v.Timeline[i].N, err)

@@ -44,6 +44,8 @@ func TestLearn(t *testing.T) {
 		`href="https://github.com/tamnd/math2/issues/9"`,
 		`href="/step/top/"`,
 		`<math`,
+		`A Dirichlet L-function is the series of a character.`,
+		`A standard text: Kudla, Notes on the local theta correspondence, sec. 1.`,
 	} {
 		if !strings.Contains(path, want) {
 			t.Errorf("learn/top/index.html has no %s", want)
@@ -126,7 +128,7 @@ func TestBuild(t *testing.T) {
 	if !strings.Contains(proof, `href="/step/top/"`) {
 		t.Error("the overview does not list its steps")
 	}
-	if !strings.Contains(read(t, out, "proof/timeline/index.html"), `<a href="/proof/">overview</a>`) {
+	if tl := read(t, out, "proof/timeline/index.html"); !strings.Contains(tl, `<a href="/proof/">`) || !strings.Contains(tl, `<a href="/learn/top/">The top of the proof</a>`) {
 		t.Error("the timeline does not link the overview")
 	}
 	if md := read(t, out, "proof/index.md"); !strings.HasPrefix(md, "# The proof in one page\n\nThe top theorem") {

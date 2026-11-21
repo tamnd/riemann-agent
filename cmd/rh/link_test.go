@@ -15,7 +15,7 @@ func TestLink(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(content, "paths"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	path := "id: p\ntitle: P\nitems:\n  - concept: Complex numbers\n    text: x\n  - concept: Theta lifts\n    text: y\n"
+	path := "id: p\ntitle: P\nitems:\n  - concept: Complex numbers\n    why: x\n  - concept: Theta lifts\n    why: y\n"
 	if err := os.WriteFile(filepath.Join(content, "paths", "p.yaml"), []byte(path), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -42,5 +42,12 @@ func TestLink(t *testing.T) {
 	}
 	if l.Concepts["Complex numbers"] != "AAAA" {
 		t.Errorf("concepts: %v", l.Concepts)
+	}
+	if l.Summaries["AAAA"] != "A complex number is a sum $a + bi$." || len(l.Summaries) != 1 {
+		t.Errorf("summaries: %v", l.Summaries)
+	}
+	again, err := steps.LoadLinks(content)
+	if err != nil || again.Summaries["AAAA"] != l.Summaries["AAAA"] {
+		t.Errorf("the summaries do not read back: %v", err)
 	}
 }

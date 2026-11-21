@@ -6,4 +6,11 @@ formal:
     decl: Complex
     match: exact
 ---
+## Summary
+
+A complex number is a sum $a + bi$.
+It has a real part.
+
+## More
+
 Body.

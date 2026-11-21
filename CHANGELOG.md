@@ -14,6 +14,9 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 - On a declaration page, the section "In the literature" shows the math of the statement as MathML, and it also shows the note that tells how the Lean statement differs from the published one.
 - A glossary name can have the status `open`. It means that the meaning of the name is not known yet. The glossary page shows this next to the name.
+- The field `text` of a path item is a standard text to learn the concept from, as spec 07.1 says. It is not required. The new field `says` gives the concept in one sentence, for a concept with no Math 2.0 node. The rule P3 now asks for the field `why` instead of `text`.
+- `rh link` copies the first sentence of the summary of each Math 2.0 node that a path or the glossary uses into the table `summaries` of `links/math2.yaml`. A path page shows this sentence under each concept, so a reader sees what the concept is before the link.
+- The timeline names the chapter by its title, and a new column Learn links each step of the note to the learning path with its background.
 
 ## v0.2.2 (2026-11-21)
 
