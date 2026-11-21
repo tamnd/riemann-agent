@@ -2,6 +2,12 @@
 
 All changes that a user can see are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The versions follow [Semantic Versioning](https://semver.org/).
 
+## v0.2.1 (2026-11-21)
+
+### Changed
+
+- The names in the side panel "In Lean" link to the declaration pages of the site.
+
 ## v0.2.0 (2026-11-21)
 
 Milestone M1, the map.
