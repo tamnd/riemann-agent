@@ -45,7 +45,10 @@
       cache[url] = fetch(url).then(function (r) {
         if (r.status === 404) return [];
         if (!r.ok) throw new Error(url + ": " + r.status);
-        return r.json();
+        if (!/\.gz$/.test(url)) return r.json();
+        // The shards are gzip files. The host sends them as they are, and the browser decompresses them here.
+        if (typeof DecompressionStream === "undefined") throw new Error("this browser cannot read the data; use a newer browser");
+        return new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).json();
       });
     }
     return cache[url];
@@ -81,7 +84,7 @@
       var my = ++seq;
       var want = text.toLowerCase();
       var wantLast = lastPart(want);
-      load("/api/names/" + nameKey(text) + ".json").then(function (rows) {
+      load("/api/names/" + nameKey(text) + ".json.gz").then(function (rows) {
         if (my !== seq) return;
         var hits = rows.filter(function (r) {
           var n = r[0].toLowerCase();
@@ -127,7 +130,95 @@
     return s;
   }
 
+  // rich turns a text with `code` spans into nodes.
+  function rich(text) {
+    var span = el("span");
+    text.split("`").forEach(function (part, i) {
+      if (!part) return;
+      span.appendChild(i % 2 ? el("code", {}, [part]) : document.createTextNode(part));
+    });
+    return span;
+  }
+
+  function reading(r) {
+    var rd = r.r;
+    if (!rd) return null;
+    var s = el("section", { class: "reading", "aria-labelledby": "reading-h" }, [el("h2", { id: "reading-h" }, ["In plain words"]), el("p", {}, [rd.s])]);
+    if (rd.n) s.appendChild(el("p", { class: "muted" }, ["The name reads: " + rd.n + "."]));
+    var dl = el("dl", { class: "parts" });
+    function group(title, items, lean) {
+      if (!items || !items.length) return;
+      dl.appendChild(el("dt", {}, [title]));
+      items.forEach(function (it) {
+        dl.appendChild(el("dd", {}, [el("code", { class: "lean" }, [it.l]), it.t ? el("span", { class: "gloss" }, [rich(it.t)]) : null]));
+      });
+    }
+    group("Given", rd.g);
+    group("Assume", rd.a);
+    if (rd.c) group(r.k === "theorem" || r.k === "lemma" ? "Then" : "Type", [rd.c]);
+    if (dl.childNodes.length) s.appendChild(dl);
+    s.appendChild(el("p", { class: "muted small" }, ["The site makes this reading from the Lean text without Lean, so it can miss a detail. The Lean statement below is exact."]));
+    return s;
+  }
+
+  function where(r) {
+    if (!r.x) return null;
+    var nav = el("nav", { class: "where", "aria-label": "Where it sits in the proof" }, [el("span", { class: "muted" }, ["In the proof: "])]);
+    var t = r.t || [];
+    if (t.length && t[0] !== "riemannHypothesis") {
+      nav.appendChild(code("riemannHypothesis", declURL("riemannHypothesis")));
+      nav.appendChild(el("span", { class: "sep" }, [" › … › "]));
+    }
+    t.forEach(function (n) {
+      nav.appendChild(code(lastPart(n), declURL(n)));
+      nav.appendChild(el("span", { class: "sep" }, [" › "]));
+    });
+    nav.appendChild(el("strong", {}, [lastPart(r.n)]));
+    return nav;
+  }
+
+  function parts(r) {
+    if (!r.pk || !r.pk.length) return null;
+    var s = el("section", { class: "kids" }, [el("h2", {}, ["Its parts (" + num(r.pk.length) + ")"]),
+      el("p", { class: "muted" }, ["Each part is a declaration that only this one leads to, in the graph of uses. The largest part comes first. Follow the parts to go down the proof one step at a time."])]);
+    var ol = el("ol", { class: "names" });
+    var add = function (from, to) {
+      r.pk.slice(from, to).forEach(function (k) {
+        ol.appendChild(el("li", {}, [code(k[0], declURL(k[0])), el("span", { class: "sub" }, [" " + num(k[1]) + (k[1] === 1 ? " declaration" : " declarations")])]));
+      });
+    };
+    var first = 100;
+    add(0, first);
+    s.appendChild(ol);
+    if (r.pk.length > first) {
+      var more = el("button", { type: "button", class: "more" }, ["Show the other " + num(r.pk.length - first) + " parts"]);
+      more.addEventListener("click", function () { add(first, r.pk.length); more.remove(); });
+      s.appendChild(more);
+    }
+    return s;
+  }
+
+  // siblings adds the links to the previous and the next part of the same parent.
+  function siblings(box, r) {
+    if (!r.x || !r.x.i) return;
+    var parent = r.x.i;
+    load("/api/decl/" + declShard(parent) + ".json.gz").then(function (rows) {
+      var p = rows.filter(function (x) { return x.n === parent && x.pk; })[0];
+      if (!p) return;
+      var i = -1;
+      p.pk.forEach(function (k, j) { if (k[0] === r.n) i = j; });
+      if (i < 0) return;
+      var nav = el("nav", { class: "pager", "aria-label": "The other parts of " + lastPart(parent) }, []);
+      nav.appendChild(i > 0 ? el("a", { href: declURL(p.pk[i - 1][0]), rel: "prev" }, ["← ", el("code", {}, [lastPart(p.pk[i - 1][0])])]) : el("span"));
+      nav.appendChild(el("a", { href: declURL(parent), class: "up" }, ["Part " + num(i + 1) + " of " + num(p.pk.length) + " of ", el("code", {}, [lastPart(parent)])]));
+      nav.appendChild(i + 1 < p.pk.length ? el("a", { href: declURL(p.pk[i + 1][0]), rel: "next" }, [el("code", {}, [lastPart(p.pk[i + 1][0])]), " →"]) : el("span"));
+      box.appendChild(nav);
+    }).catch(function () {});
+  }
+
   function showDecl(box, r, many) {
+    var w = where(r);
+    if (w) box.appendChild(w);
     var head = el("header", { class: "node-head" }, [
       el(many ? "h2" : "h1", { class: "decl-name" }, [r.n]),
       el("p", { class: "decl-marks" }, [
@@ -138,26 +229,31 @@
       ])
     ]);
     box.appendChild(head);
+    var rd = reading(r);
+    if (rd) box.appendChild(rd);
+    if (r.s) box.appendChild(el("section", {}, [el("h2", {}, ["The Lean statement"]), el("pre", { class: "sig" }, [el("code", {}, [r.k + " " + r.n + " " + r.s])])]));
+    if (r.d) box.appendChild(el("section", {}, [el("h2", {}, ["The comment in the source"]), el("div", { class: "doc" }, [r.d.replace(/^\/--\s*|\s*-\/$/g, "")])]));
     var facts = el("table", { class: "checks facts" }, [
       el("tr", {}, [el("th", {}, ["Module"]), el("td", {}, [code(r.m, moduleURL(r.m))])]),
       el("tr", {}, [el("th", {}, ["Source"]), el("td", {}, [el("a", { href: sourceURL(r.f, r.l) }, [r.f + ", line " + r.l])])])
     ]);
     if (r.x) {
       facts.appendChild(el("tr", {}, [el("th", {}, ["Depth"]), el("td", {}, [r.x.d + " steps of use from the top"])]));
-      facts.appendChild(el("tr", {}, [el("th", {}, ["Size"]), el("td", {}, [num(r.x.s) + " declarations that only it leads to"])]));
-      if (r.x.i) facts.appendChild(el("tr", {}, [el("th", {}, ["Through"]), el("td", {}, [code(r.x.i, declURL(r.x.i)), el("span", { class: "sub" }, [" each chain of uses from the top goes through it"])])]));
-      if (r.x.y) facts.appendChild(el("tr", {}, [el("th", {}, ["Part"]), el("td", {}, [r.x.y === "trunk" ? "the trunk" : code(r.x.y, declURL(r.x.y))])]));
+      facts.appendChild(el("tr", {}, [el("th", {}, ["Size"]), el("td", {}, [num(r.x.s) + (r.x.s === 1 ? " declaration" : " declarations") + ", with itself, that only it leads to"])]));
+      facts.appendChild(el("tr", {}, [el("th", {}, ["Used by"]), el("td", {}, [num(r.x.f) + " declarations of the spine"])]));
+      if (r.x.y) facts.appendChild(el("tr", {}, [el("th", {}, ["Branch"]), el("td", {}, [r.x.y === "trunk" ? "the trunk" : code(r.x.y, declURL(r.x.y))])]));
     }
     if (r.a) facts.appendChild(el("tr", {}, [el("th", {}, ["Attributes"]), el("td", {}, [el("code", {}, [r.a])])]));
-    box.appendChild(facts);
-    if (r.d) box.appendChild(el("div", { class: "doc" }, [r.d.replace(/^\/--\s*|\s*-\/$/g, "")]));
-    if (r.s) box.appendChild(el("pre", { class: "sig" }, [el("code", {}, [r.n + " " + r.s])]));
+    box.appendChild(el("section", {}, [el("h2", {}, ["Facts"]), facts]));
+    var kids = parts(r);
+    if (kids) box.appendChild(kids);
     var grid = el("div", { class: "decl-lists" });
     [names("Uses", r.u, r.nu, "The list shows the first names. The source has all."),
       names("Used by", r.b, r.nb, "The list shows the first names."),
       names("Maybe uses", r.w, 0, "")].forEach(function (s) { if (s) grid.appendChild(s); });
     if (r.w && r.w.length) grid.lastChild.appendChild(el("p", { class: "muted" }, ["A name in dot notation can go to more than one declaration. These are the declarations it can go to."]));
     box.appendChild(grid);
+    if (!many) siblings(box, r);
   }
 
   function declPage(box) {
@@ -168,7 +264,7 @@
       return;
     }
     status.textContent = "Loading " + name + ".";
-    load("/api/decl/" + declShard(name) + ".json").then(function (rows) {
+    load("/api/decl/" + declShard(name) + ".json.gz").then(function (rows) {
       var hits = rows.filter(function (r) { return r.n === name; });
       if (!hits.length) {
         status.textContent = "";
@@ -192,7 +288,7 @@
       status.textContent = "Give a module name.";
       return;
     }
-    load("/api/module/" + moduleShard(name) + ".json").then(function (rows) {
+    load("/api/module/" + moduleShard(name) + ".json.gz").then(function (rows) {
       var m = rows.filter(function (r) { return r.n === name; })[0];
       if (!m) {
         status.textContent = "No module has the name " + name + ".";

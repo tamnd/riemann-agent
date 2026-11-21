@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/tamnd/riemann-agent/index"
+	leanread "github.com/tamnd/riemann-agent/lean/read"
 )
 
 // The code pages show the records of rh index and the spine of rh spine. The release has about a million declarations, which is too many for one static page each. So the site has one page for a declaration, /code/decl/?n=Name, and one page for a module, /code/module/?m=Name. The page reads the record from a shard of api/decl/ or api/module/. The script that does this is the same for each name, and the shards change only when the source changes.
@@ -21,6 +22,7 @@ const (
 	weakLimit    = 20
 	sigLimit     = 2000
 	docLimit     = 2000
+	trailLimit   = 8 // the dominators in the trail of a record; the page walks up for more
 )
 
 // DeclShard returns the shard of a declaration name: the FNV-1a hash of the name, as three hex digits. code.js computes the same hash.
@@ -82,22 +84,25 @@ type Code struct {
 
 // declRecord is the JSON of one declaration in api/decl/. The keys are short because the shards hold about a million records.
 type declRecord struct {
-	N  string     `json:"n"`
-	K  string     `json:"k"`
-	M  string     `json:"m"`
-	F  string     `json:"f"`
-	L  int        `json:"l"`
-	P  bool       `json:"p,omitempty"`
-	A  string     `json:"a,omitempty"`
-	D  string     `json:"d,omitempty"`
-	S  string     `json:"s"`
-	U  []string   `json:"u,omitempty"`
-	NU int        `json:"nu,omitempty"`
-	W  []string   `json:"w,omitempty"`
-	B  []string   `json:"b,omitempty"`
-	NB int        `json:"nb,omitempty"`
-	X  *spineFact `json:"x,omitempty"`
-	C  string     `json:"c,omitempty"` // literature, when the declaration is a named result of spec 04.6
+	N  string            `json:"n"`
+	K  string            `json:"k"`
+	M  string            `json:"m"`
+	F  string            `json:"f"`
+	L  int               `json:"l"`
+	P  bool              `json:"p,omitempty"`
+	A  string            `json:"a,omitempty"`
+	D  string            `json:"d,omitempty"`
+	S  string            `json:"s"`
+	U  []string          `json:"u,omitempty"`
+	NU int               `json:"nu,omitempty"`
+	W  []string          `json:"w,omitempty"`
+	B  []string          `json:"b,omitempty"`
+	NB int               `json:"nb,omitempty"`
+	X  *spineFact        `json:"x,omitempty"`
+	C  string            `json:"c,omitempty"`  // literature, when the declaration is a named result of spec 04.6
+	R  *leanread.Reading `json:"r,omitempty"`  // the plain reading of the statement
+	T  []string          `json:"t,omitempty"`  // the nearest dominators, from the top down, with the immediate dominator last
+	PK [][2]any          `json:"pk,omitempty"` // the parts: the declarations that this one dominates directly, with their sizes, the largest first
 }
 
 // spineFact is the place of a declaration on the spine.
@@ -248,12 +253,33 @@ func (b *builder) codeFiles(w *writer) {
 				out = append(out, n)
 			}
 		}
-		sort.Strings(out)
+		// The declarations of the spine come first, the largest first, so the most important names lead the list.
+		sort.Slice(out, func(a, c int) bool {
+			sa, sc := b.spineSize(out[a]), b.spineSize(out[c])
+			if sa != sc {
+				return sa > sc
+			}
+			return out[a] < out[c]
+		})
 		total := len(out)
 		if len(out) > limit {
 			out = out[:limit]
 		}
 		return out, total
+	}
+	kids := map[string][][2]any{}
+	for name, n := range b.spine {
+		if n.Idom != "" {
+			kids[n.Idom] = append(kids[n.Idom], [2]any{name, n.Size})
+		}
+	}
+	for _, k := range kids {
+		sort.Slice(k, func(a, c int) bool {
+			if k[a][1].(int) != k[c][1].(int) {
+				return k[a][1].(int) > k[c][1].(int)
+			}
+			return k[a][0].(string) < k[c][0].(string)
+		})
 	}
 	decls := make(map[string][]declRecord, declShards)
 	nameShards := map[string][][3]any{}
@@ -274,10 +300,14 @@ func (b *builder) codeFiles(w *writer) {
 		if on && n.Module == d.Module {
 			r.X = &spineFact{D: n.Depth, F: n.Fanin, S: n.Size, I: n.Idom, Y: n.Layer}
 			depth = n.Depth
+			r.T = b.trail(n, trailLimit)
+			r.PK = kids[d.Name]
 		}
 		if index.IsLiterature(d.Name) {
 			r.C = "literature"
 		}
+		rd := leanread.Read(d.Kind, d.Name, d.Sig)
+		r.R = &rd
 		s := DeclShard(d.Name)
 		decls[s] = append(decls[s], r)
 		if !d.Private {
@@ -287,10 +317,10 @@ func (b *builder) codeFiles(w *writer) {
 		modDecls[d.Module] = append(modDecls[d.Module], moduleDecl{N: d.Name, K: d.Kind, L: d.Line, S: depth >= 0})
 	}
 	for s, rs := range decls {
-		w.json1("api/decl/"+s+".json", rs)
+		w.gzjson("api/decl/"+s+".json.gz", rs)
 	}
 	for k, rs := range nameShards {
-		w.json1("api/names/"+k+".json", rs)
+		w.gzjson("api/names/"+k+".json.gz", rs)
 	}
 	mods := map[string][]moduleRecord{}
 	for _, m := range b.ix.Modules {
@@ -303,7 +333,7 @@ func (b *builder) codeFiles(w *writer) {
 		mods[s] = append(mods[s], moduleRecord{N: m.Name, F: m.Path, L: m.Lines, I: m.Imports, D: m.Depth, X: x})
 	}
 	for s, rs := range mods {
-		w.json1("api/module/"+s+".json", rs)
+		w.gzjson("api/module/"+s+".json.gz", rs)
 	}
 	sum := map[string]any{"source": b.source.Commit, "summary": b.code.Summary}
 	if b.code.Spine != nil {
@@ -324,4 +354,28 @@ func clip(s string, n int) string {
 		k--
 	}
 	return s[:k] + " …"
+}
+
+func (b *builder) spineSize(name string) int {
+	if n, ok := b.spine[name]; ok {
+		return n.Size
+	}
+	return 0
+}
+
+// trail returns up to limit dominators of n, from the top down. The first is the root when the chain is short enough.
+func (b *builder) trail(n *index.SpineNode, limit int) []string {
+	var up []string
+	for p := n.Idom; p != "" && len(up) < limit; {
+		up = append(up, p)
+		q, ok := b.spine[p]
+		if !ok {
+			break
+		}
+		p = q.Idom
+	}
+	for i, j := 0, len(up)-1; i < j; i, j = i+1, j-1 {
+		up[i], up[j] = up[j], up[i]
+	}
+	return up
 }

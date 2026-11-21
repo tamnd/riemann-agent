@@ -9,6 +9,11 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - `rh index` reads the Lean source without Lean and writes `modules.jsonl.gz`, `decls/<xx>.jsonl.gz` and `summary.json`. The package `lean/syntax` finds the imports, the namespaces, the open commands, the declarations and the identifiers. The package `index` resolves the identifiers with the rules of spec 04.2 and makes the syntactic declaration graph. On the release it reads 175,187 modules and 1,061,531 declarations in about 6 minutes, and the longest import chain from `Main` has 203 modules.
 - `rh graph` answers four questions on the declaration graph: what a declaration uses, what uses it, a shortest chain of uses from one declaration to another, and the closure. `rh spine` finds the declarations that the root uses, stops at the named results of spec 04.6, and gives the depth, fan-in and dominator size of each node, the trunk and the chapter candidates. It writes `spine.json` and `spine.jsonl.gz`. On the release the spine of `riemannHypothesis` has 156,339 declarations with the cut points and 769,260 without them.
 - The code pages. With `-index` and `-spine`, `rh site build` adds the numbers of the release, the trunk, the large branches and the libraries to `/code/`, a page for each declaration at `/code/decl/?n=Name` and a page for each module at `/code/module/?m=Name`. The pages read the records from shards in `api/decl/`, `api/module/` and `api/names/`, so the site has about 5,300 files for a million declarations. The search page and the code page search the Lean names.
+- Each declaration page now has a plain reading of the statement. The package `lean/read` reads the Lean signature without Lean and gives what the statement takes, what it assumes and what it gives, in words. The page also shows the chain of declarations from `riemannHypothesis` down to it, the list of its parts in the dominator tree with the largest part first, and links to the previous and the next part of the same parent. A long list of parts shows 100 rows first and a button shows the rest.
+
+### Changed
+
+- The shards in `api/` are gzip files. The browser decompresses them. The site is now 416 MB and 5,340 files, below the limits of the Cloudflare static assets.
 
 ## v0.1.0 (2026-11-21)
 

@@ -5,6 +5,7 @@ package site
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"embed"
 	"encoding/json"
@@ -629,6 +630,10 @@ const headers = `/*
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
+
+/api/*.gz
+  Content-Type: application/gzip
+  Cache-Control: public, max-age=3600
 `
 
 var wordRE = regexp.MustCompile(`[A-Za-z][A-Za-z0-9]+`)
@@ -665,6 +670,30 @@ func (w *writer) file(name string, data []byte) {
 	}
 	w.files++
 	w.bytes += int64(len(data))
+}
+
+// gzjson writes compact JSON in a gzip file, for the shards of the code pages. The browser decompresses them with DecompressionStream, so the site stays small on the host. The gzip header has no time, so the same data gives the same bytes and a deploy uploads only the shards that changed.
+func (w *writer) gzjson(name string, v any) {
+	if w.err != nil {
+		return
+	}
+	var buf bytes.Buffer
+	zw, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	if err != nil {
+		w.err = err
+		return
+	}
+	enc := json.NewEncoder(zw)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(v); err != nil {
+		w.err = err
+		return
+	}
+	if err := zw.Close(); err != nil {
+		w.err = err
+		return
+	}
+	w.file(name, buf.Bytes())
 }
 
 // json1 writes compact JSON, for the large data files.

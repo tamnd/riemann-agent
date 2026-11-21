@@ -1,6 +1,8 @@
 package site
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"os"
@@ -52,17 +54,24 @@ func TestCodePages(t *testing.T) {
 		t.Fatal(err)
 	}
 	var recsOut []declRecord
-	raw, err := os.ReadFile(filepath.Join(out, "api", "decl", DeclShard("Lib.top")+".json"))
+	raw, err := os.ReadFile(filepath.Join(out, "api", "decl", DeclShard("Lib.top")+".json.gz"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := json.Unmarshal(raw, &recsOut); err != nil {
+	zr, err := gzip.NewReader(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.NewDecoder(zr).Decode(&recsOut); err != nil {
 		t.Fatal(err)
 	}
 	found := false
 	for _, r := range recsOut {
 		if r.N == "Lib.top" {
 			found = true
+			if r.R == nil || r.R.Summary == "" {
+				t.Errorf("Lib.top has no reading")
+			}
 			if r.X == nil || r.X.D != 1 {
 				t.Errorf("Lib.top must be on the spine at depth 1, got %+v", r.X)
 			}
@@ -71,7 +80,7 @@ func TestCodePages(t *testing.T) {
 	if !found {
 		t.Error("the shard has no record of Lib.top")
 	}
-	for _, f := range []string{"code/decl/index.html", "code/module/index.html", "api/code.json", "api/names/to.json", "assets/code.js"} {
+	for _, f := range []string{"code/decl/index.html", "code/module/index.html", "api/code.json", "api/names/to.json.gz", "assets/code.js"} {
 		if _, err := os.Stat(filepath.Join(out, f)); err != nil {
 			t.Error(err)
 		}
