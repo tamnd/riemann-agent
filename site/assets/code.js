@@ -232,7 +232,9 @@
     if (r.st) box.appendChild(el("p", { class: "callout" }, ["This declaration has a step page with its statement in standard notation and its proof in words: ", el("a", { href: "/step/" + r.st[0] + "/" }, [r.st[1]]), "."]));
     if (r.lt) {
       var lit = el("section", {}, [el("h2", {}, ["In the literature"]), el("p", {}, ["The name points to " + r.lt.r + ". " + (r.lt.h ? "The proof reads the hypothesis structure." : "The proof does not read the hypothesis structure. The code proves the statement from other declarations.")])]);
-      if (r.lt.s) lit.appendChild(el("p", {}, [r.lt.s]));
+      // r.lt.s and r.lt.n are HTML that the build made from the reviewed content repository.
+      if (r.lt.s) { var says = el("div", {}, []); says.innerHTML = r.lt.s; lit.appendChild(says); }
+      if (r.lt.n) { var note = el("div", { "class": "note" }, []); note.innerHTML = r.lt.n; lit.appendChild(note); }
       if (r.lt.c) lit.appendChild(el("ul", {}, r.lt.c.map(function (c) { return el("li", {}, [c[1] ? el("a", { href: c[1] }, [c[0]]) : c[0]]); })));
       lit.appendChild(el("p", {}, [el("a", { href: "/proof/named-results/" }, ["All named results"])]));
       box.appendChild(lit);

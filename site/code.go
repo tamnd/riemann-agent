@@ -3,6 +3,7 @@ package site
 import (
 	"fmt"
 	"hash/fnv"
+	"html"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -110,7 +111,8 @@ type declRecord struct {
 // litRecord is a named result on its declaration page.
 type litRecord struct {
 	R string      `json:"r"`           // the name in the literature
-	S string      `json:"s,omitempty"` // what the Lean statement says
+	S string      `json:"s,omitempty"` // what the Lean statement says, as HTML with the math rendered
+	N string      `json:"n,omitempty"` // how the Lean statement differs from the published one, as HTML
 	H bool        `json:"h,omitempty"` // the proof reads the hypothesis structure
 	C [][2]string `json:"c,omitempty"` // the citations: the text and the link
 }
@@ -321,7 +323,7 @@ func (b *builder) codeFiles(w *writer) {
 		}
 		if l, ok := b.lit[d.Name]; ok {
 			r.C = "literature"
-			r.LT = &litRecord{R: l.Result, S: l.Says, H: l.ReadsHypothesis}
+			r.LT = &litRecord{R: l.Result, S: b.inline(l.Says), N: b.inline(l.Note), H: l.ReadsHypothesis}
 			for _, c := range l.Cite {
 				r.LT.C = append(r.LT.C, [2]string{fmt.Sprintf("%s. %s. %s, %d.", strings.Join(c.Authors, ", "), strings.TrimSuffix(c.Title, "."), c.Venue, c.Year), c.Link()})
 			}
@@ -398,4 +400,16 @@ func (b *builder) trail(n *index.SpineNode, limit int) []string {
 		up[i], up[j] = up[j], up[i]
 	}
 	return up
+}
+
+// inline renders a short Markdown text of the content repository to HTML, with the math as MathML. A text that does not render stays as escaped text.
+func (b *builder) inline(src string) string {
+	if src == "" {
+		return ""
+	}
+	out, err := b.render(src)
+	if err != nil {
+		return "<p>" + html.EscapeString(src) + "</p>"
+	}
+	return string(out)
 }
