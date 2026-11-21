@@ -95,7 +95,7 @@ func lex(src []byte) []token {
 			continue
 		case c == '/' && i+1 < n && src[i+1] == '-':
 			start := i
-			doc := i+2 < n && src[i+2] == '-' && !(i+3 < n && src[i+3] == '/')
+			doc := i+2 < n && src[i+2] == '-' && (i+3 >= n || src[i+3] != '/')
 			depth := 0
 			for i < n {
 				if src[i] == '/' && i+1 < n && src[i+1] == '-' {
@@ -201,7 +201,7 @@ func scanIdent(src []byte, i int) int {
 	for {
 		if i < n && src[i] == 0xC2 && i+1 < n && src[i+1] == 0xAB { // «
 			j := i + 2
-			for j < n && !(src[j] == 0xC2 && j+1 < n && src[j+1] == 0xBB) && src[j] != '\n' {
+			for j < n && (src[j] != 0xC2 || j+1 >= n || src[j+1] != 0xBB) && src[j] != '\n' {
 				j++
 			}
 			if j >= n || src[j] == '\n' {

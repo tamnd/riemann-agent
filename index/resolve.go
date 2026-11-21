@@ -84,7 +84,7 @@ func (ix *Index) declGraph() {
 // resolve sets the uses and the weak uses of declaration i.
 func (t *names) resolve(i int, d *syntax.Decl) {
 	ctx := contexts(d, t.space)
-	self := int32(i)
+	self := int32(i) //nolint:gosec // fewer than 2^31 declarations
 	strong := map[int32]bool{}
 	weak := map[int32]bool{}
 	for _, id := range d.Idents {

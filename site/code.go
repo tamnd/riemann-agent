@@ -50,7 +50,7 @@ func NameKey(name string) string {
 			break
 		}
 		if ('a' <= r && r <= 'z') || ('0' <= r && r <= '9') {
-			k = append(k, byte(r))
+			k = append(k, byte(r)) //nolint:gosec // r is ASCII here
 		} else {
 			k = append(k, '_')
 		}

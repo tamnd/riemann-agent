@@ -614,7 +614,7 @@ func words(s string) string {
 		out = append(out, string(cur))
 	}
 	for i, w := range out {
-		if !isAllUpper(w) && !(len(w) == 1 && i+1 < len(out)) {
+		if !isAllUpper(w) && (len(w) != 1 || i+1 >= len(out)) {
 			out[i] = strings.ToLower(w)
 		}
 	}

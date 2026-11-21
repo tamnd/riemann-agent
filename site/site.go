@@ -730,16 +730,6 @@ func (w *writer) gzjson(name string, v any) {
 	w.file(name, buf.Bytes())
 }
 
-// json1 writes compact JSON, for the large data files.
-func (w *writer) json1(name string, v any) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		w.err = err
-		return
-	}
-	w.file(name, append(data, '\n'))
-}
-
 func (w *writer) json(name string, v any) {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {

@@ -237,7 +237,7 @@ func longest(succ [][]int32, post []int32) []int {
 	n := len(succ)
 	rank := make([]int32, n) // the place in reverse postorder
 	for k, v := range post {
-		rank[v] = int32(len(post) - 1 - k)
+		rank[v] = int32(len(post) - 1 - k) //nolint:gosec // fewer than 2^31 nodes
 	}
 	depth := make([]int, n)
 	for k := len(post) - 1; k >= 0; k-- {
