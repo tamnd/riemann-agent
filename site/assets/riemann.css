@@ -125,3 +125,6 @@ button.more:hover { opacity: 1; }
 .levels li span[aria-current] { background: var(--ink, #222); color: var(--paper, #fff); border-color: var(--ink, #222); }
 .levels li .none { opacity: .45; }
 .callout { border-left: 3px solid var(--accent, #2a6); padding: .5rem .9rem; background: var(--soft, #f4f7f4); }
+/* Long Lean names and paths wrap in the text column. Long lines of Lean wrap and keep their indentation. */
+.prose p code, .prose li code, .prose td code { overflow-wrap: anywhere; }
+.prose pre { white-space: pre-wrap; overflow-wrap: anywhere; }

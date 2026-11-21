@@ -12,6 +12,9 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - A row of links "Level of detail" on the proof pages goes from the overview to the chapter, the step and the Lean declaration.
 - A step can have the field `drafted_by: <role>@<model>` of spec 09. The step page then tells that a model wrote the draft.
 - A declaration page that has a step links to it, and a declaration that is a named result shows what it says and where it is published.
+### Fixed
+
+- Long Lean names, file paths and long lines of Lean code wrap inside the text column. Before, they went out of the column on the step pages.
 
 ## v0.2.1 (2026-11-21)
 
