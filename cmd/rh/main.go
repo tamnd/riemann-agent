@@ -37,8 +37,8 @@ func commands() []command {
 		{name: "spine", summary: "find the declarations that the top theorem needs", run: runSpine},
 		{name: "trust", summary: "run the axiom check and the kernel replay, and write the trust report", milestone: "M2"},
 		{name: "extract", summary: "read the exact declaration graph from the built environment", milestone: "M2"},
-		{name: "check", summary: "check the written proof against the records, with the rules C1 to C6", run: runCheck},
-		{name: "link", summary: "match the names of the proof with the nodes of Math 2.0", milestone: "M4"},
+		{name: "check", summary: "check the written proof against the records, with the rules C1 to C6, P1 to P5 and G1 to G4", run: runCheck},
+		{name: "link", summary: "match the names of the proof with the nodes of Math 2.0", run: runLink},
 		{name: "draft", summary: "draft one step of the written proof with a model", milestone: "M5"},
 		{name: "deploy", summary: "upload the site to the Cloudflare Worker", milestone: "M0"},
 	}

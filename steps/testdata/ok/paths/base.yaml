@@ -1,0 +1,9 @@
+id: base
+title: The base
+for: [trunk]
+items:
+  - concept: Complex numbers
+    math2: AAAA
+    text: Numbers $a + bi$.
+    why: The zeros are complex numbers.
+    steps: [top]

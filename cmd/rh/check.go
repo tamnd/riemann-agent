@@ -55,7 +55,21 @@ func runCheck(args []string, stdout, stderr io.Writer) error {
 		}
 		env.Tag = func(t string) bool { _, ok := m.Lookup(t); return ok }
 	}
+	paths, err := steps.LoadPaths(*content)
+	if err != nil {
+		return err
+	}
+	chapters, err := steps.Chapters(*content)
+	if err != nil {
+		return err
+	}
+	gl, err := steps.LoadGlossary(*content)
+	if err != nil {
+		return err
+	}
 	problems := append(steps.Check(ss, env), steps.CheckLiterature(lit, env)...)
+	problems = append(problems, steps.CheckPaths(paths, chapters, ss, env)...)
+	problems = append(problems, steps.CheckGlossary(gl, ss, env)...)
 	for _, p := range problems {
 		fmt.Fprintln(stdout, p)
 	}
@@ -65,7 +79,7 @@ func runCheck(args []string, stdout, stderr io.Writer) error {
 		counts[s.Status]++
 		open += len(s.Open)
 	}
-	fmt.Fprintf(stdout, "%d steps (%d drafted, %d checked, %d reviewed), %d dependencies with no step yet, %d named results, %d problems\n", len(ss), counts["drafted"], counts["checked"], counts["reviewed"], open, len(lit), len(problems))
+	fmt.Fprintf(stdout, "%d steps (%d drafted, %d checked, %d reviewed), %d dependencies with no step yet, %d named results, %d paths, %d glossary names, %d problems\n", len(ss), counts["drafted"], counts["checked"], counts["reviewed"], open, len(lit), len(paths), len(gl), len(problems))
 	if len(problems) > 0 {
 		return errCheck
 	}

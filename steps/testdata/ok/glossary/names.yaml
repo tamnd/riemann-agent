@@ -1,0 +1,8 @@
+- name: top
+  kind: theorem
+  says: The top of the proof.
+  step: top
+  status: drafted
+- name: Space.
+  kind: namespace
+  says: The names of one subject.

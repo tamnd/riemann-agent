@@ -4,6 +4,11 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Added
+
+- `rh link` writes `links/math2.yaml`. It reads the `formal.decl` fields of the nodes of a math2 checkout and the `decl` fields of the seed list and the skeletons, keeps the tags that the Math 2.0 index has, and keeps each entry that a person added. It also matches each concept of a path that has no tag against the names and the aliases of the nodes. The flag `-n` prints the counts and writes nothing.
+- `rh check` checks the learning paths in `paths/*.yaml` with the rules P1 to P5 and the glossary in `glossary/names.yaml` with the rules G1 to G4. A path must name chapters and paths that exist, with no cycle, and each concept must have a Math 2.0 node or a proposal for one. A glossary name must be a declaration of the records with the same kind, or a name space.
+
 ### Changed
 
 - On a declaration page, the section "In the literature" shows the math of the statement as MathML, and it also shows the note that tells how the Lean statement differs from the published one.

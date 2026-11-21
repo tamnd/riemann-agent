@@ -1,0 +1,5 @@
+skeleton: 11-XX
+items:
+  - {name: zeta, kind: definition, decl: riemannZeta, node: BBBB}
+  - {name: old, kind: definition, decl: Old, node: GONE}
+  - {name: complex again, kind: definition, decl: Complex, node: BBBB}

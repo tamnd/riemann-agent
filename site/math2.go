@@ -20,6 +20,8 @@ type Node struct {
 	Kind string `json:"kind"`
 	Name string `json:"name"`
 	URL  string `json:"url"`
+	// Aliases are the other names of the node. rh link matches the concepts of the paths against the name and the aliases.
+	Aliases []string `json:"aliases"`
 }
 
 // Math2 is the index of the nodes of Math 2.0, by tag.

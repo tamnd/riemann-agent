@@ -1,0 +1,8 @@
+id: next
+title: The next
+for: [trunk]
+needs: [base]
+items:
+  - concept: Theta lifts
+    proposal: https://github.com/tamnd/math2/issues/1
+    text: A way to move forms between groups.
