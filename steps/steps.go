@@ -34,6 +34,8 @@ type Step struct {
 	Reviews  []Review `yaml:"reviews"`
 	// DraftedBy is <role>@<model> when a model wrote the draft (spec 09).
 	DraftedBy string `yaml:"drafted_by"`
+	// Prompt is <role>/<version>, the prompt that made the draft.
+	Prompt string `yaml:"prompt"`
 
 	File string `yaml:"-"` // the path in the content repository, with forward slashes
 	Body string `yaml:"-"` // the Markdown after the front matter

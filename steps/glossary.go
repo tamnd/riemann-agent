@@ -21,6 +21,9 @@ type Entry struct {
 	Math2  string `yaml:"math2"`  // the tag of the Math 2.0 node, when there is one
 	Step   string `yaml:"step"`   // the id of the step that explains it
 	Status string `yaml:"status"` // open when the meaning is not known yet, or drafted, checked or reviewed
+	// DraftedBy is <role>@<model> and Prompt is <role>/<version>, when a model wrote the entry (spec 09).
+	DraftedBy string `yaml:"drafted_by"`
+	Prompt    string `yaml:"prompt"`
 }
 
 // LoadGlossary reads glossary/names.yaml. It returns no entries and no error when the file does not exist.

@@ -4,6 +4,14 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Added
+
+- `rh draft` drafts steps of the written proof with a model. It takes Lean names or step ids, or `-queue N` for the next N open names in the order of the spine. For each name it sends the Lean text, the direct dependencies with their glossary text and signatures, and the matching glossary names. It writes the step with the status `drafted`, the fields `drafted_by` and `prompt`, and the fields `uses`, `routine` and `open` from the dependencies. Then it moves the name from `open` to `uses` in the parent steps. The flag `-n` prints the prompts and the cost estimate and sends nothing. The flag `-pr` opens a pull request with the label `agent-draft`.
+- The package `llm` is the model client. It counts the cost of each call from the token usage and the price list. A fake client makes the tests run with no network.
+- The package `prompts` holds the prompts of the roles prover, namer, stater, linker, chapterer and pathfinder. Each prompt has a version, and each draft records the prompt that made it.
+- The file `agent.yaml` in the content repo sets the models and the budget per day and per run. With no file, the budget is zero and `rh draft` sends no request. Each call goes to `agent/ledger.jsonl` with its tokens and its cost.
+- `rh` can write a step file. The fields keep the same order in each file.
+
 ## v0.5.0 (2026-11-21)
 
 Milestone M4, the paths and the links.
