@@ -20,6 +20,7 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - `rh link` expands the TeX macros of Math 2.0, such as `\C` and `\abs`, when it copies a summary. It reads them from `macros/m2.katex.json` of the checkout. So the site renders each summary with no macros of its own.
 - When a Math 2.0 summary starts with a setup sentence, such as "Let V be a vector space over C.", `rh link` keeps the setup with the next sentence. It skips a summary that only says which topic the node is a part of.
 - A lead with code or math shows as rendered Markdown, not as raw text. A path page names the chapter that it prepares for as a chapter, so the link does not look like a link to the path itself.
+- The link to Math 2.0 on a glossary name and on a cited result shows the name of the node. Before, it showed the raw text `[[TAG]]`.
 
 ## v0.2.2 (2026-11-21)
 

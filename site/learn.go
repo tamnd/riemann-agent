@@ -324,7 +324,7 @@ func (b *builder) glossaryMarkdown() string {
 			}
 		}
 		if e.Math2 != "" {
-			refs = append(refs, "In Math 2.0: [["+e.Math2+"]].")
+			refs = append(refs, "In Math 2.0: "+b.m2ref(e.Math2)+".")
 		}
 		if len(refs) > 0 {
 			out.WriteString(strings.Join(refs, " ") + "\n\n")
@@ -343,4 +343,13 @@ func (b *builder) glossaryMarkdown() string {
 		}
 	}
 	return out.String()
+}
+
+// m2ref gives the Markdown link to the Math 2.0 node tag, with the name of the node as the text. A bare [[TAG]] is not a link of the Markdown.
+func (b *builder) m2ref(tag string) string {
+	name := tag
+	if n, ok := b.math2.Lookup(tag); ok && n.Name != "" {
+		name = n.Name
+	}
+	return "[[" + name + "|" + tag + "]]"
 }

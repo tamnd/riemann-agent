@@ -322,7 +322,7 @@ func (b *builder) namedList() string {
 			out.WriteString("\n")
 		}
 		if n.Math2 != "" {
-			fmt.Fprintf(&out, "\nIn Math 2.0: [[%s]].\n", n.Math2)
+			fmt.Fprintf(&out, "\nIn Math 2.0: %s.\n", b.m2ref(n.Math2))
 		}
 		if n.Note != "" {
 			out.WriteString("\n" + n.Note + "\n")
