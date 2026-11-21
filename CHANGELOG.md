@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.5.0 (2026-11-21)
+
+Milestone M4, the paths and the links.
+
 ### Added
 
 - `rh link` writes `links/math2.yaml`. It reads the `formal.decl` fields of the nodes of a math2 checkout and the `decl` fields of the seed list and the skeletons, keeps the tags that the Math 2.0 index has, and keeps each entry that a person added. It also matches each concept of a path that has no tag against the names and the aliases of the nodes. The flag `-n` prints the counts and writes nothing.
