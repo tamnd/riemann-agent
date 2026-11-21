@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+## v0.6.0 (2026-11-21)
+
+Milestone M5, drafting at scale. This release has no new code since v0.5.1. With this release, the content repo has drafted L2 steps for the main branch of each chapter: 50 steps in all, none checked by a person yet.
+
 ## v0.5.1 (2026-11-21)
 
 The first part of milestone M5: the model client, `rh draft` and `rh report`.
