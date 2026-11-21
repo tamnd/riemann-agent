@@ -7,6 +7,7 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 ### Added
 
 - `rh trust`. It runs the axiom check on a built Lean project with two methods: `#print axioms`, and a walk of its own in Lean meta code that does not call `Lean.collectAxioms`. The two lists must agree, and only the three standard axioms of Mathlib pass. With `-lean4checker`, it also runs the kernel replay. It writes `records/axioms.json` and `records/replay.json`, and it sets the rows Q2 and Q3 of `records/trust.json`. A test on a small project with Lean v4.33.1 found `sorryAx` and a new axiom, and the two methods agreed for each theorem.
+- `rh extract` and the Lean file `RhExtract`. The command reads the constants of the built environment and puts the exact declaration graph into the records of `rh index`. The graph of each matched declaration changes from `syntactic` to `exact`. An anonymous instance matches by its module and line. The summary has the new field `exact`, the count of the declarations with the exact graph.
 
 ## v0.6.1 (2026-11-21)
 

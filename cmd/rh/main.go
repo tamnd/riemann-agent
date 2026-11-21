@@ -36,7 +36,7 @@ func commands() []command {
 		{name: "graph", summary: "query the declaration graph: uses, used by, path and closure", run: runGraph},
 		{name: "spine", summary: "find the declarations that the top theorem needs", run: runSpine},
 		{name: "trust", summary: "run the axiom check and the kernel replay, and write the trust report", run: runTrust},
-		{name: "extract", summary: "read the exact declaration graph from the built environment", milestone: "M2"},
+		{name: "extract", summary: "read the exact declaration graph from the built environment", run: runExtract},
 		{name: "check", summary: "check the written proof against the records, with the rules C1 to C6, P1 to P5 and G1 to G4", run: runCheck},
 		{name: "link", summary: "match the names of the proof with the nodes of Math 2.0", run: runLink},
 		{name: "draft", summary: "draft steps of the written proof with a model, within the budget of agent.yaml", run: runDraft},

@@ -74,6 +74,7 @@ type Summary struct {
 	Uses         int            `json:"uses"`            // the strong edges of the declaration graph
 	Weak         int            `json:"weak"`            // the weak edges
 	Duplicates   int            `json:"duplicate_names"` // the public names that two declarations have
+	Exact        int            `json:"exact,omitempty"` // the declarations whose uses come from the built environment (rh extract)
 }
 
 // Library is one top directory of the source.

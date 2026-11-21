@@ -65,6 +65,14 @@ rh trust -lean ../riemann-lean/lean -content ../riemann -lean4checker ~/lean4che
 
 The command runs `#print axioms` and a walk of its own over the constants that each theorem uses. The two lists must agree, and each axiom must be one of `propext`, `Classical.choice` and `Quot.sound`. With `-lean4checker`, it also runs `lean4checker --fresh` on `Main`. It writes `records/axioms.json`, `records/replay.json` and the rows Q2 and Q3 of `records/trust.json`. `rh trust -print` prints the Lean file of the check.
 
+Replace the syntactic declaration graph with the exact graph from the built environment:
+
+```sh
+rh extract -index work/index -lean ../riemann-lean/lean -out work/index-exact -keep work/constants.jsonl.gz
+```
+
+The command imports `Main` in Lean and writes each constant of the release with the constants that its type and value use. Lean adds auxiliary constants such as `foo.match_1` and the projections of a structure, so the command follows the edges through them to the declarations of the source. A declaration with no constant keeps its syntactic uses. `extract.json` in the output tells how many declarations matched and how many edges changed. Use `-exact FILE` to read the output of an earlier run.
+
 `rh site build` reads the index of Math 2.0 from https://math2.tamnd.com/api/nodes.json. Use `-math2 FILE` to read a copy, or `-math2 ""` to build with no network.
 
 ## Exit codes
