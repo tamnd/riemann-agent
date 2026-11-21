@@ -63,7 +63,7 @@ Check the axioms of the five theorems of `Main` in a built copy of riemann-lean,
 rh trust -lean ../riemann-lean/lean -content ../riemann -lean4checker ~/lean4checker/.lake/build/bin/lean4checker
 ```
 
-The command runs `#print axioms` and a walk of its own over the constants that each theorem uses. The two lists must agree, and each axiom must be one of `propext`, `Classical.choice` and `Quot.sound`. With `-lean4checker`, it also runs `lean4checker --fresh` on `Main`. It writes `records/axioms.json`, `records/replay.json` and the rows Q2 and Q3 of `records/trust.json`. `rh trust -print` prints the Lean file of the check.
+The command runs `#print axioms` and a walk of its own over the constants that each theorem uses. The two lists must agree, and each axiom must be one of `propext`, `Classical.choice` and `Quot.sound`. The command also reads the type of each theorem from the environment. The type must be the Prop that the theorem claims, for example `RiemannHypothesis` for `riemannHypothesis`. With `-lean4checker`, it also runs `lean4checker --fresh` on `Main`. It writes `records/axioms.json`, `records/replay.json` and the rows Q2 and Q3 of `records/trust.json`. `rh trust -print` prints the Lean file of the check.
 
 Replace the syntactic declaration graph with the exact graph from the built environment:
 

@@ -65,6 +65,9 @@ func runTrust(args []string, stdout, stderr io.Writer) error {
 		if !t.Match {
 			state += ", the two methods do not agree"
 		}
+		if !t.TypeOK {
+			state += fmt.Sprintf(", WRONG TYPE: %s, not %s", t.Type, t.Want)
+		}
 		list := strings.Join(t.Print, ", ")
 		if list == "" {
 			list = "no axioms"
@@ -118,7 +121,7 @@ func writeTrust(content string, ax trust.Axioms, rp *trust.Replay) error {
 	switch {
 	case ax.OK:
 		q2.State = "yes"
-		q2.Note = fmt.Sprintf("Only propext, Classical.choice and Quot.sound, for each of the %d theorems of %s. #print axioms and the axiom walk of rh agree. Checked on %s with %s.", len(ax.Theorems), ax.Module, ax.Date, ax.Lean)
+		q2.Note = fmt.Sprintf("Only propext, Classical.choice and Quot.sound, for each of the %d theorems of %s. #print axioms and the axiom walk of rh agree, and each theorem has the expected type. Checked on %s with %s.", len(ax.Theorems), ax.Module, ax.Date, ax.Lean)
 	default:
 		q2.State = "no"
 		var bad []string
@@ -128,6 +131,9 @@ func writeTrust(content string, ax trust.Axioms, rp *trust.Replay) error {
 			}
 			if !th.Match {
 				bad = append(bad, fmt.Sprintf("the two methods do not agree for %s", th.Name))
+			}
+			if !th.TypeOK {
+				bad = append(bad, fmt.Sprintf("the type of %s is %s, not %s", th.Name, th.Type, th.Want))
 			}
 		}
 		q2.Note = strings.Join(bad, ". ") + fmt.Sprintf(". Checked on %s.", ax.Date)

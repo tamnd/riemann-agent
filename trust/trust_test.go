@@ -19,6 +19,8 @@ rh-walk bad: sorryAx
 rh-walk uses: myAx
 rh-walk pure: 
 rh-walk long: Classical.choice, Quot.sound
+rh-type riemannHypothesis: RiemannHypothesis
+rh-type riemannZeta_eq_zero_re: True
 `
 
 func TestParse(t *testing.T) {
@@ -55,6 +57,26 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseType(t *testing.T) {
+	text := out + "'riemannHypothesis' depends on axioms: [propext]\n'riemannZeta_eq_zero_re' depends on axioms: [propext]\nrh-walk riemannHypothesis: propext\nrh-walk riemannZeta_eq_zero_re: propext\n"
+	ts, err := Parse([]byte(text), []string{"riemannHypothesis", "riemannZeta_eq_zero_re", "good"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ts[0].TypeOK || ts[0].Type != "RiemannHypothesis" {
+		t.Errorf("riemannHypothesis: got %+v, want the type RiemannHypothesis", ts[0])
+	}
+	if ts[1].TypeOK || ts[1].Type != "True" || ts[1].Want != "RiemannZetaZerosOnLine" {
+		t.Errorf("riemannZeta_eq_zero_re: got %+v, want a wrong type", ts[1])
+	}
+	if !ts[2].TypeOK {
+		t.Error("a theorem with no expected type must pass the type check")
+	}
+	if OK(ts[:2]) || !OK(ts[:1]) {
+		t.Error("OK must fail on a wrong type only")
+	}
+}
+
 func TestParseMissing(t *testing.T) {
 	_, err := Parse([]byte(out), []string{"good", "absent"})
 	if err == nil || !strings.Contains(err.Error(), "absent") {
@@ -64,7 +86,7 @@ func TestParseMissing(t *testing.T) {
 
 func TestFile(t *testing.T) {
 	f := File("Main", []string{"a", "b.c"})
-	for _, s := range []string{"import Main\n", "#print axioms a\n", "#print axioms b.c\n", "[`a, `b.c]", "rh-walk {n}:", "def rhAxiomWalk"} {
+	for _, s := range []string{"import Main\n", "#print axioms a\n", "#print axioms b.c\n", "[`a, `b.c]", "rh-walk {n}:", "rh-type {n}:", "def rhAxiomWalk"} {
 		if !strings.Contains(f, s) {
 			t.Errorf("the file has no %q", s)
 		}

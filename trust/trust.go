@@ -30,13 +30,25 @@ var MainTheorems = []string{
 	"LFunction_eq_zero_re_of_isPrimitive",
 }
 
+// Expected gives the type that each theorem of MainTheorems must have: a Prop of Mathlib or of Statements.lean. Spec 05.5 reviews these Props.
+var Expected = map[string]string{
+	"riemannHypothesis":                   "RiemannHypothesis",
+	"riemannZeta_eq_zero_re":              "RiemannZetaZerosOnLine",
+	"LFunction_ne_zero_of_half_lt_re":     "DirichletLNonvanishingRightOfHalf",
+	"LFunction_eq_zero_re":                "DirichletLZerosOnLine",
+	"LFunction_eq_zero_re_of_isPrimitive": "PrimitiveDirichletLZerosOnLine",
+}
+
 // Theorem is the axiom result of one theorem.
 type Theorem struct {
-	Name  string   `json:"name"`
-	Print []string `json:"print_axioms"` // the axioms that #print axioms lists, sorted
-	Walk  []string `json:"walk"`         // the axioms that the walk of rh finds, sorted
-	Match bool     `json:"match"`        // Print and Walk are the same
-	Extra []string `json:"extra"`        // the axioms that are not standard
+	Name   string   `json:"name"`
+	Print  []string `json:"print_axioms"` // the axioms that #print axioms lists, sorted
+	Walk   []string `json:"walk"`         // the axioms that the walk of rh finds, sorted
+	Match  bool     `json:"match"`        // Print and Walk are the same
+	Extra  []string `json:"extra"`        // the axioms that are not standard
+	Type   string   `json:"type"`         // the type of the theorem in the environment
+	Want   string   `json:"want,omitempty"`
+	TypeOK bool     `json:"type_ok"` // Type is Want, or the theorem has no expected type
 }
 
 // Axioms is the result of the axiom check, records/axioms.json.
@@ -100,6 +112,8 @@ def rhAxiomWalk (env : Environment) (root : Name) : Array Name := Id.run do
 	b.WriteString("] do\n")
 	b.WriteString("    let ax := (rhAxiomWalk env n).map toString |>.qsort (· < ·)\n")
 	b.WriteString("    IO.println s!\"rh-walk {n}: {\", \".intercalate ax.toList}\"\n")
+	b.WriteString("    if let some ci := env.find? n then\n")
+	b.WriteString("      IO.println s!\"rh-type {n}: {(toString ci.type).replace \"\\n\" \" \"}\"\n")
 	return b.String()
 }
 
@@ -107,6 +121,7 @@ var (
 	rePrint = regexp.MustCompile(`'([^']+)' depends on axioms: \[([^\]]*)\]`)
 	reNone  = regexp.MustCompile(`'([^']+)' does not depend on any axioms`)
 	reWalk  = regexp.MustCompile(`^rh-walk ([^:]+): ?(.*)$`)
+	reType  = regexp.MustCompile(`^rh-type ([^:]+): ?(.*)$`)
 )
 
 // Parse reads the output of the Lean file of File. It returns the result of each theorem in names, in that order.
@@ -121,11 +136,14 @@ func Parse(out []byte, names []string) ([]Theorem, error) {
 		pr[m[1]] = []string{}
 	}
 	walk := map[string][]string{}
+	types := map[string]string{}
 	sc := bufio.NewScanner(bytes.NewReader(out))
 	sc.Buffer(make([]byte, 1<<20), 1<<26)
 	for sc.Scan() {
 		if m := reWalk.FindStringSubmatch(strings.TrimSpace(sc.Text())); m != nil {
 			walk[m[1]] = split(m[2])
+		} else if m := reType.FindStringSubmatch(strings.TrimSpace(sc.Text())); m != nil {
+			types[m[1]] = strings.TrimSpace(m[2])
 		}
 	}
 	var ts []Theorem
@@ -137,7 +155,8 @@ func Parse(out []byte, names []string) ([]Theorem, error) {
 			missing = append(missing, n)
 			continue
 		}
-		ts = append(ts, Theorem{Name: n, Print: p, Walk: w, Match: same(p, w), Extra: extra(p, w)})
+		want := Expected[n]
+		ts = append(ts, Theorem{Name: n, Print: p, Walk: w, Match: same(p, w), Extra: extra(p, w), Type: types[n], Want: want, TypeOK: want == "" || types[n] == want})
 	}
 	if len(missing) > 0 {
 		return ts, fmt.Errorf("the output has no result for %s", strings.Join(missing, ", "))
@@ -145,13 +164,13 @@ func Parse(out []byte, names []string) ([]Theorem, error) {
 	return ts, nil
 }
 
-// OK reports whether each theorem has only standard axioms and the two methods agree.
+// OK reports whether each theorem has only standard axioms, the two methods agree, and the type is the expected one.
 func OK(ts []Theorem) bool {
 	if len(ts) == 0 {
 		return false
 	}
 	for _, t := range ts {
-		if !t.Match || len(t.Extra) > 0 {
+		if !t.Match || len(t.Extra) > 0 || !t.TypeOK {
 			return false
 		}
 	}
