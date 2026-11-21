@@ -57,6 +57,14 @@ rh fetch -dir work/release -compare ../riemann-lean/manifests/files.sha256
 
 The command downloads about 240 MB. A second run downloads only the files with a wrong hash.
 
+Check the axioms of the five theorems of `Main` in a built copy of riemann-lean, and write the result into the content repository:
+
+```sh
+rh trust -lean ../riemann-lean/lean -content ../riemann -lean4checker ~/lean4checker/.lake/build/bin/lean4checker
+```
+
+The command runs `#print axioms` and a walk of its own over the constants that each theorem uses. The two lists must agree, and each axiom must be one of `propext`, `Classical.choice` and `Quot.sound`. With `-lean4checker`, it also runs `lean4checker --fresh` on `Main`. It writes `records/axioms.json`, `records/replay.json` and the rows Q2 and Q3 of `records/trust.json`. `rh trust -print` prints the Lean file of the check.
+
 `rh site build` reads the index of Math 2.0 from https://math2.tamnd.com/api/nodes.json. Use `-math2 FILE` to read a copy, or `-math2 ""` to build with no network.
 
 ## Exit codes

@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Added
+
+- `rh trust`. It runs the axiom check on a built Lean project with two methods: `#print axioms`, and a walk of its own in Lean meta code that does not call `Lean.collectAxioms`. The two lists must agree, and only the three standard axioms of Mathlib pass. With `-lean4checker`, it also runs the kernel replay. It writes `records/axioms.json` and `records/replay.json`, and it sets the rows Q2 and Q3 of `records/trust.json`. A test on a small project with Lean v4.33.1 found `sorryAx` and a new axiom, and the two methods agreed for each theorem.
+
 ## v0.6.1 (2026-11-21)
 
 A fix to the declaration graph.
