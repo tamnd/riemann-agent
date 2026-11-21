@@ -79,7 +79,7 @@ func (b *builder) learnViews(chapters []*chapterInfo) {
 		v := &view{
 			Path: "learn/" + p.ID + "/", Title: p.Title, Section: "learn", tmpl: "page", Lead: p.Lead,
 			Description: "A learning path of riemann: " + p.Title + ". The concepts in the order to learn them, with the reason for each one and a link to Math 2.0.",
-			SourceURL:   ContentRepo + "/blob/main/" + p.File,
+			SourceURL:   ContentRepo + "/blob/main/" + sourceOf(p),
 			Trail:       trail(p.Title),
 			markdown:    b.pathMarkdown(p, byID, bySlug),
 		}
@@ -147,6 +147,14 @@ func (b *builder) learnViews(chapters []*chapterInfo) {
 	}
 }
 
+// sourceOf returns the file that a reader edits to change the page of the path: the written chapter when there is one.
+func sourceOf(p *steps.Path) string {
+	if p.BodyFile != "" {
+		return p.BodyFile
+	}
+	return p.File
+}
+
 // conceptLink returns the Markdown of the Math 2.0 link of an item.
 func (b *builder) conceptLink(it steps.Item) string {
 	if tag := b.links.Concept(it); tag != "" {
@@ -178,7 +186,10 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 		}
 		fmt.Fprintf(&out, "This path prepares you for the %s %s.\n\n", word, strings.Join(after, ", "))
 	}
-	fmt.Fprintf(&out, "The path has %d concepts. Learn them in order. Mark a concept as known when you know it, and the mark stays in this browser.\n\n", len(p.Items))
+	if body := strings.TrimSpace(p.Body); body != "" {
+		out.WriteString(body + "\n")
+		return out.String()
+	}
 	for i, it := range p.Items {
 		fmt.Fprintf(&out, "## %d. %s\n\n", i+1, it.Concept)
 		tag := b.links.Concept(it)

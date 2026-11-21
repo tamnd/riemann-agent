@@ -51,6 +51,10 @@ func TestPathRules(t *testing.T) {
 	if s := strings.Join(rules, " "); s != want {
 		t.Errorf("rules: %s, want %s\n%v", s, want, got)
 	}
+	body := []*Path{{ID: "d", File: "paths/d.yaml", BodyFile: "paths/d.md", Title: "D", Body: "## The Zeta function\n\nText.", Items: []Item{{Concept: "zeta function", Why: "w", Math2: "AAAA"}, {Concept: "Gauss sum", Why: "w", Math2: "AAAA"}}}}
+	if got := CheckPaths(body, nil, nil, env()); len(got) != 1 || got[0].Rule != "P6" || !strings.Contains(got[0].Text, "Gauss sum") {
+		t.Errorf("written chapter: %v", got)
+	}
 	gl := []Entry{{Name: "top", Kind: "def", Says: "x", Step: "none", Status: "done", Math2: "ZZZZ"}, {Name: "top", Says: "y"}, {Name: "No.", Kind: "namespace", Says: "z"}, {Name: "gone"}}
 	got = CheckGlossary(gl, nil, env())
 	rules = nil

@@ -24,6 +24,9 @@ type Path struct {
 	Items []Item   `yaml:"items"`
 
 	File string `yaml:"-"`
+	// Body is the written chapter of the path, the file paths/<id>.md. It is empty when the path has no such file. When it is not empty, the site shows it in place of the list of the items.
+	Body     string `yaml:"-"`
+	BodyFile string `yaml:"-"`
 }
 
 // Item is one concept of a path.
@@ -56,6 +59,13 @@ func LoadPaths(root string) ([]*Path, error) {
 		dec.KnownFields(true)
 		if err := dec.Decode(p); err != nil {
 			return nil, fmt.Errorf("%s: %w", rel, err)
+		}
+		md := strings.TrimSuffix(f, ".yaml") + ".md"
+		if body, err := os.ReadFile(md); err == nil { // #nosec G304 -- a file of the content repository
+			p.Body = string(body)
+			p.BodyFile = strings.TrimSuffix(rel, ".yaml") + ".md"
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return nil, err
 		}
 		out = append(out, p)
 	}
@@ -90,6 +100,7 @@ func Chapters(root string) ([]string, error) {
 //	P3: each item has a concept and says where the proof uses it.
 //	P4: the tag of Math 2.0 exists, or the item has a proposal.
 //	P5: each step of an item exists.
+//	P6: when the path has a written chapter, the chapter names each concept of the items.
 func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem {
 	var out []Problem
 	chap := map[string]bool{}
@@ -146,6 +157,9 @@ func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem
 				if stepIDs[s] == nil {
 					add("P5", "%s: the step %q does not exist", name, s)
 				}
+			}
+			if p.Body != "" && it.Concept != "" && !strings.Contains(strings.ToLower(p.Body), strings.ToLower(it.Concept)) {
+				add("P6", "the chapter %s does not name the concept %q", p.BodyFile, it.Concept)
 			}
 		}
 	}

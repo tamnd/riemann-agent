@@ -51,10 +51,19 @@ func TestLearn(t *testing.T) {
 			t.Errorf("learn/top/index.html has no %s", want)
 		}
 	}
+	w := read(t, out, "learn/written/index.html")
+	for _, want := range []string{`The zeros of zeta`, `<strong>Definition.</strong>`, `href="/learn/top/"`, `href="https://math2.tamnd.com/wiki/riemann-hypothesis/"`, `blob/main/paths/written.md`} {
+		if !strings.Contains(w, want) {
+			t.Errorf("learn/written/index.html has no %s", want)
+		}
+	}
+	if strings.Contains(w, "Where the proof uses it.") {
+		t.Error("learn/written/index.html shows the list of the items")
+	}
 	if s := read(t, out, "learn/index.html"); !strings.Contains(s, `href="/learn/top/"`) || !strings.Contains(s, `href="/learn/map/"`) {
 		t.Error("learn/index.html does not list the paths")
 	}
-	if s := read(t, out, "learn/map/index.html"); !strings.Contains(s, "With a node in Math 2.0: 2.") {
+	if s := read(t, out, "learn/map/index.html"); !strings.Contains(s, "With a node in Math 2.0: 3.") {
 		t.Errorf("the map has no count")
 	}
 	gl := read(t, out, "glossary/index.html")

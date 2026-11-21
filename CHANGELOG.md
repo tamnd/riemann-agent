@@ -4,6 +4,15 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Added
+
+- A learning path can have a written chapter, `paths/<id>.md`, next to `paths/<id>.yaml`. The site shows the chapter in place of the list that it makes from the items. The YAML file still gives the title, the order, the concept map and the links to the proof.
+- `rh check` rule P6: a written chapter names each concept of its path.
+
+### Changed
+
+- The generated page of a path no longer starts with the count of the concepts.
+
 ## v0.6.3 (2026-11-21)
 
 One more check for milestone M2.

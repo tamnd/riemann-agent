@@ -1,0 +1,8 @@
+id: written
+title: A written chapter
+needs: [top]
+lead: A path with a chapter in prose.
+items:
+  - concept: Riemann hypothesis
+    math2: VCGF9YR36X
+    why: It is the statement of the top theorem.
