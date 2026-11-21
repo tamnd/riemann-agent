@@ -92,6 +92,13 @@ func (t *names) resolve(i int, d *syntax.Decl) {
 			t.addWeak(weak, lastPart(id.Name), self)
 			continue
 		}
+		if id.Local {
+			// a name that the declaration binds, or a field of it, as in hx.1 or h.trans
+			if strings.Contains(id.Name, ".") {
+				t.addWeak(weak, lastPart(id.Name), self)
+			}
+			continue
+		}
 		name := strings.TrimPrefix(id.Name, "_root_.")
 		if j, ok := t.lookup(ctx, name, t.mod[i]); ok {
 			strong[j] = true

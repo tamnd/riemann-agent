@@ -4,6 +4,10 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 ## Unreleased
 
+### Fixed
+
+- `rh index` no longer records a local name as a use of a declaration. A local name is a binder of the signature, a binder of `fun`, `∀` or `∃`, a name from `intro`, `obtain`, `rcases` and the other tactics that bind names, a name from `have` or `let`, or a name in a match arm. Before this fix, a binder such as `hc` in a proof could resolve to a declaration with the same last part, for example `GLq.hc`. A dotted name with a local head, such as `h.le`, now gives a weak edge only. Issue #40.
+
 ## v0.6.0 (2026-11-21)
 
 Milestone M5, drafting at scale. This release has no new code since v0.5.1. With this release, the content repo has drafted L2 steps for the main branch of each chapter: 50 steps in all, none checked by a person yet.

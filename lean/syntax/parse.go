@@ -36,6 +36,8 @@ type Ident struct {
 	Name string
 	Dot  bool // written as .name or (e).name, so the reader cannot resolve it
 	Sig  bool // the identifier is in the signature
+	// Local is true when the declaration binds the name itself, or when the head of a dotted name is such a name, as in hx.1. A binder of fun, ∀, ∃, intro, obtain, have or let, a binder of the signature, a name in the pattern of a match arm, a name before := and a field of the declaration are local. The resolver does not take a local name as a use of a declaration.
+	Local bool
 }
 
 // Scope is the context of names at a declaration.
@@ -264,6 +266,11 @@ func Parse(src []byte) *File {
 			if i < len(cmd) && sigEnd > i {
 				d.Sig = squash(string(src[cmd[i].off:cmd[sigEnd-1].end]))
 			}
+			var own []string
+			if kind == "structure" || kind == "class" || kind == "inductive" {
+				own = children(cmd[sigEnd:], d.Name, kind)
+			}
+			loc := locals(cmd, i, sigEnd, own)
 			seen := map[string]bool{}
 			for j := i; j < len(cmd); j++ {
 				x := cmd[j]
@@ -279,15 +286,185 @@ func Parse(src []byte) *File {
 					continue
 				}
 				seen[key] = true
-				d.Idents = append(d.Idents, Ident{Name: name, Dot: x.dot, Sig: j < sigEnd})
+				head, _, _ := strings.Cut(name, ".")
+				d.Idents = append(d.Idents, Ident{Name: name, Dot: x.dot, Sig: j < sigEnd, Local: !x.dot && loc[head]})
 			}
-			if kind == "structure" || kind == "class" || kind == "inductive" {
-				d.Children = children(cmd[sigEnd:], d.Name, kind)
-			}
+			d.Children = own
 			f.Decls = append(f.Decls, d)
 		}
 	}
 	return f
+}
+
+// binderStart are the tokens after which a list of binders comes, up to =>, ↦, a comma or a colon at the same depth.
+var binderStart = map[string]bool{"fun": true, "λ": true, "∀": true, "∃": true, "∃!": true, "Π": true, "Σ": true, "∑": true, "∏": true, "⋃": true, "⋂": true, "forall": true, "exists": true}
+
+// lineBinders are the tactics that bind the names that follow them on the same line.
+var lineBinders = map[string]bool{"intro": true, "intros": true, "rintro": true, "introv": true, "obtain": true, "rcases": true, "rename_i": true, "next": true, "case": true, "choose": true, "set": true, "generalize": true, "ext": true, "funext": true}
+
+// headBinders are the words that bind the names after them up to the first colon or :=, as in have h : p := e or let x := e.
+var headBinders = map[string]bool{"have": true, "let": true, "suffices": true, "haveI": true, "letI": true, "obtain": true}
+
+// locals returns the names that a declaration binds itself. The scan is a heuristic over the tokens: it reads the binders of the signature, the binders after fun, ∀ and ∃, the names of the tactics that introduce hypotheses, the patterns of the match arms, the names before :=, and the fields of the declaration. It does not follow the scope of a binder, so a name that is local anywhere in the declaration is local in all of it.
+// i is the index of the token after the name, and sigEnd the end of the signature.
+func locals(cmd []token, i, sigEnd int, own []string) map[string]bool {
+	out := map[string]bool{}
+	for _, c := range own {
+		out[lastPart(c)] = true
+	}
+	add := func(x token) {
+		if x.kind == tIdent && !x.dot && !keywords[x.text] && !strings.Contains(x.text, ".") && x.text != "_" {
+			out[unquote(x.text)] = true
+		}
+	}
+	isOpen := func(s string) bool { return s == "(" || s == "[" || s == "{" || s == "⟨" || s == "⦃" }
+	isClose := func(s string) bool { return s == ")" || s == "]" || s == "}" || s == "⟩" || s == "⦄" }
+	// binders reads a list of binders from k, as in x y (z : T) ⟨a, b⟩, and stops at =>, ↦, := or a colon or comma at depth 0.
+	binders := func(k int) {
+		depth := 0
+		typed := map[int]bool{} // the depths at which a colon came, so the rest of the group is a type
+		for ; k < len(cmd); k++ {
+			x := cmd[k]
+			if x.kind == tSymbol {
+				switch {
+				case isOpen(x.text):
+					depth++
+					// an instance binder with no name, as in [Field K], binds no name
+					typed[depth] = typed[depth-1] || x.text == "[" && !named(cmd, k)
+					continue
+				case isClose(x.text):
+					depth--
+					if depth < 0 {
+						return
+					}
+					continue
+				case x.text == "=>" || x.text == "↦" || x.text == ":=":
+					return
+				case depth == 0 && (x.text == "," || x.text == ":" || x.text == "∈" || x.text == "<" || x.text == "≤" || x.text == ">" || x.text == "≥" || x.text == "≠" || x.text == "|"):
+					return
+				case x.text == ":" || x.text == "∈":
+					typed[depth] = true
+				}
+				continue
+			}
+			if x.kind == tIdent && (x.text == "in" || x.text == "with" || x.text == "by") {
+				return
+			}
+			if x.kind == tIdent && depth > 0 && !typed[depth] {
+				add(x)
+			} else if x.kind == tIdent && depth == 0 {
+				add(x)
+			}
+		}
+	}
+	// The binders of the signature are the groups at depth 0 before the colon of the type.
+	depth := 0
+	for k := i; k < sigEnd; k++ {
+		x := cmd[k]
+		if x.kind != tSymbol {
+			continue
+		}
+		switch {
+		case isOpen(x.text):
+			if depth == 0 && (x.text != "[" || named(cmd, k)) {
+				binders(k + 1)
+			}
+			depth++
+		case isClose(x.text):
+			depth--
+		case depth == 0 && x.text == ":":
+			k = sigEnd
+		}
+	}
+	for k := i; k < len(cmd); k++ {
+		x := cmd[k]
+		switch {
+		case (x.kind == tIdent || x.kind == tSymbol) && binderStart[x.text]:
+			binders(k + 1)
+		case x.kind == tIdent && headBinders[x.text]:
+			binders(k + 1)
+		case x.kind == tIdent && lineBinders[x.text] && !x.dot && (k == 0 || !inList(cmd[k-1])):
+			m := k + 1
+			if x.text == "rcases" {
+				// rcases e with pat: the names come after with.
+				for m < len(cmd) && cmd[m].line == x.line && !(cmd[m].kind == tIdent && cmd[m].text == "with") {
+					m++
+				}
+				m++
+			}
+			skip := x.text == "case"
+			for ; m < len(cmd) && cmd[m].line == x.line; m++ {
+				y := cmd[m]
+				if y.kind == tSymbol && (y.text == "=>" || y.text == ":=" || y.text == ";" || y.text == ":" || y.text == "<|" || y.text == "|>") {
+					break
+				}
+				if y.kind == tIdent && (y.text == "using" || y.text == "with" || y.text == "at" || y.text == "from") {
+					break
+				}
+				if skip && y.kind == tIdent {
+					skip = false
+					continue
+				}
+				add(y)
+			}
+		case x.kind == tIdent && x.text == "with" && k+1 < len(cmd) && cmd[k+1].kind == tSymbol && cmd[k+1].text == "⟨":
+			for m := k + 1; m < len(cmd) && cmd[m].line == x.line; m++ {
+				add(cmd[m])
+			}
+		case x.kind == tSymbol && x.text == "|" && x.bol:
+			// A match arm: | pat => e. The first name is the constructor, the other plain names are binders.
+			first := true
+			for m := k + 1; m < len(cmd); m++ {
+				y := cmd[m]
+				if y.kind == tSymbol && (y.text == "=>" || y.text == ":=" || y.text == ":") {
+					break
+				}
+				if y.kind == tIdent {
+					if first {
+						first = false
+						if !y.dot && !strings.Contains(y.text, ".") && m+1 < len(cmd) && cmd[m+1].kind == tSymbol && (cmd[m+1].text == "=>" || cmd[m+1].text == ",") {
+							add(y) // a pattern that is one name, as in | x => e
+						}
+						continue
+					}
+					add(y)
+				}
+			}
+		case x.kind == tIdent && k >= i && k > 0 && k+1 < len(cmd) && cmd[k+1].kind == tSymbol && cmd[k+1].text == ":=" && (x.bol || cmd[k-1].kind == tSymbol && (cmd[k-1].text == "{" || cmd[k-1].text == ",")):
+			add(x) // a field of a structure instance, as in { f := e, g := e } or f := e on its own line
+		}
+	}
+	return out
+}
+
+// named reports whether the group that opens at k has a colon at its top level, as in [inst : Field K] or (x : T).
+func named(cmd []token, k int) bool {
+	depth := 0
+	for m := k + 1; m < len(cmd); m++ {
+		x := cmd[m]
+		if x.kind != tSymbol {
+			continue
+		}
+		switch x.text {
+		case "(", "[", "{", "⟨", "⦃":
+			depth++
+		case ")", "]", "}", "⟩", "⦄":
+			if depth == 0 {
+				return false
+			}
+			depth--
+		case ":":
+			if depth == 0 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// inList reports whether a token opens or continues a list, as in simp [foo, ext] or @[ext].
+func inList(t token) bool {
+	return t.kind == tSymbol && (t.text == "[" || t.text == "," || t.text == "@[")
 }
 
 // keywords are the words of the term language that look like identifiers.
@@ -447,4 +624,12 @@ func trimEnd(src []byte, start, end int) int {
 		end--
 	}
 	return end
+}
+
+// lastPart returns the part of a name after the last dot.
+func lastPart(s string) string {
+	if k := strings.LastIndexByte(s, '.'); k >= 0 {
+		return s[k+1:]
+	}
+	return s
 }
