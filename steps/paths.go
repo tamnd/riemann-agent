@@ -21,7 +21,9 @@ type Path struct {
 	For   []string `yaml:"for"`   // the slugs of the chapters that the path prepares for
 	Needs []string `yaml:"needs"` // the ids of the paths to read first
 	Lead  string   `yaml:"lead"`
-	Items []Item   `yaml:"items"`
+	// Order is the place of the path in the reading order. The paths with an order come first, from the lowest order; the other paths follow in the order of their chapters.
+	Order int    `yaml:"order"`
+	Items []Item `yaml:"items"`
 
 	File string `yaml:"-"`
 	// Body is the written chapter of the path, the file paths/<id>.md. It is empty when the path has no such file. When it is not empty, the site shows it in place of the list of the items.
@@ -98,7 +100,7 @@ func Chapters(root string) ([]string, error) {
 //	P1: the id is the name of the file, and the path has a title and items.
 //	P2: each chapter of For exists, and each path of Needs exists, with no cycle.
 //	P3: each item has a concept and says where the proof uses it.
-//	P4: the tag of Math 2.0 exists, or the item has a proposal.
+//	P4: the tag of Math 2.0 exists, or the item has a proposal or a standard text.
 //	P5: each step of an item exists.
 //	P6: when the path has a written chapter, the chapter names each concept of the items.
 func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem {
@@ -150,8 +152,8 @@ func CheckPaths(paths []*Path, chapters []string, ss []*Step, env Env) []Problem
 			switch {
 			case it.Math2 != "" && env.Tag != nil && !env.Tag(it.Math2):
 				add("P4", "%s: Math 2.0 has no node %s", name, it.Math2)
-			case it.Math2 == "" && it.Proposal == "":
-				add("P4", "%s has no Math 2.0 node and no proposal", name)
+			case it.Math2 == "" && it.Proposal == "" && strings.TrimSpace(it.Text) == "":
+				add("P4", "%s has no Math 2.0 node, no proposal and no standard text", name)
 			}
 			for _, s := range it.Steps {
 				if stepIDs[s] == nil {
@@ -198,6 +200,9 @@ func Order(paths []*Path, chapters []string) []*Path {
 		rank[c] = i
 	}
 	first := func(p *Path) int {
+		if p.Order > 0 {
+			return p.Order - 1<<20
+		}
 		r := len(chapters)
 		for _, c := range p.For {
 			if v, ok := rank[c]; ok && v < r {

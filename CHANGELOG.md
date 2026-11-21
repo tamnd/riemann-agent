@@ -8,6 +8,8 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 
 - A learning path can have a written chapter, `paths/<id>.md`, next to `paths/<id>.yaml`. The site shows the chapter in place of the list that it makes from the items. The YAML file still gives the title, the order, the concept map and the links to the proof.
 - `rh check` rule P6: a written chapter names each concept of its path.
+- A path can set `order`, its place in the reading order. The page `learn/` lists the paths with no chapter as Part I, the background, and the others as Part II, a guide to each chapter.
+- Rule P4 accepts an item with a standard text and no Math 2.0 node or proposal.
 
 ### Changed
 

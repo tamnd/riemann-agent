@@ -26,6 +26,10 @@ func TestPathsAndGlossary(t *testing.T) {
 	if o := Order([]*Path{ps[1], ps[0]}, ch); o[0].ID != "base" || o[1].ID != "next" {
 		t.Errorf("order: %s %s", o[0].ID, o[1].ID)
 	}
+	o := Order([]*Path{{ID: "g", For: []string{"trunk"}}, {ID: "s2", Order: 2}, {ID: "s1", Order: 1}}, ch)
+	if o[0].ID != "s1" || o[1].ID != "s2" || o[2].ID != "g" {
+		t.Errorf("order with Order: %s %s %s", o[0].ID, o[1].ID, o[2].ID)
+	}
 	gl, err := LoadGlossary("testdata/ok")
 	if err != nil || len(gl) != 2 {
 		t.Fatal(gl, err)

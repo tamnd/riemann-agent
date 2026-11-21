@@ -208,7 +208,7 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 			refs = append(refs, "Learn it in Math 2.0: [["+it.Concept+"|"+tag+"]].")
 		} else if it.Proposal != "" {
 			refs = append(refs, fmt.Sprintf("Math 2.0 has no node for it yet. The [proposal](%s) asks for one.", it.Proposal))
-		} else {
+		} else if strings.TrimSpace(it.Text) == "" {
 			refs = append(refs, "Math 2.0 has no node for it yet.")
 		}
 		if t := strings.TrimSpace(it.Text); t != "" {
@@ -232,19 +232,40 @@ func (b *builder) pathMarkdown(p *steps.Path, byID map[string]*steps.Path, bySlu
 
 func (b *builder) learnList(bySlug map[string]*chapterInfo) string {
 	var out strings.Builder
-	out.WriteString("## The paths\n\nEach path prepares for one or more chapters of the proof. A path that needs another path comes after it.\n\n")
+	var subjects, guides []*steps.Path
 	for _, p := range b.learn {
-		var ch []string
-		for _, c := range p.For {
-			if ci := bySlug[c]; ci != nil {
-				ch = append(ch, ci.Title)
+		if len(p.For) == 0 {
+			subjects = append(subjects, p)
+		} else {
+			guides = append(guides, p)
+		}
+	}
+	if len(subjects) > 0 {
+		out.WriteString("## Part I. The background\n\nEach chapter of this part is one subject. Read them in this order. A chapter uses only the ones above it.\n\n")
+		for _, p := range subjects {
+			fmt.Fprintf(&out, "1. [%s](%s)\n", p.Title, LearnURL(p.ID))
+		}
+		out.WriteString("\n")
+	}
+	if len(guides) > 0 {
+		if len(subjects) > 0 {
+			out.WriteString("## Part II. A guide to each chapter of the proof\n\nEach guide says what a chapter of the proof needs, and where in Part I you find it.\n\n")
+		} else {
+			out.WriteString("## The paths\n\nEach path prepares for one or more chapters of the proof. A path that needs another path comes after it.\n\n")
+		}
+		for _, p := range guides {
+			var ch []string
+			for _, c := range p.For {
+				if ci := bySlug[c]; ci != nil {
+					ch = append(ch, ci.Title)
+				}
 			}
+			fmt.Fprintf(&out, "1. [%s](%s)", p.Title, LearnURL(p.ID))
+			if len(ch) > 0 {
+				fmt.Fprintf(&out, ", for %s", strings.Join(ch, ", "))
+			}
+			out.WriteString("\n")
 		}
-		fmt.Fprintf(&out, "1. [%s](%s), %d concepts", p.Title, LearnURL(p.ID), len(p.Items))
-		if len(ch) > 0 {
-			fmt.Fprintf(&out, ", for %s", strings.Join(ch, ", "))
-		}
-		out.WriteString(".\n")
 	}
 	out.WriteString("\nThe [concept map](/learn/map/) shows all the concepts by chapter.")
 	if len(b.glossary) > 0 {
