@@ -26,7 +26,7 @@ func NewClaude(key string) *Claude {
 // Complete sends the request as a stream, so that a long answer does not hit a time limit, and returns the full answer.
 func (c *Claude) Complete(ctx context.Context, r Request) (*Response, error) {
 	p := anthropic.MessageNewParams{
-		Model:     anthropic.Model(r.Model),
+		Model:     r.Model,
 		MaxTokens: r.MaxTokens,
 		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(r.Prompt))},
 	}
@@ -57,7 +57,7 @@ func (c *Claude) Complete(ctx context.Context, r Request) (*Response, error) {
 	}
 	out := &Response{
 		Text:       text.String(),
-		Model:      string(m.Model),
+		Model:      m.Model,
 		StopReason: string(m.StopReason),
 		Usage: Usage{
 			Input:      m.Usage.InputTokens,

@@ -115,7 +115,7 @@ jobs:
       - name: a command that is not written yet exits with code 3
         run: |
           code=0
-          "$RUNNER_TEMP/rh" draft || code=$?
+          "$RUNNER_TEMP/rh" deploy || code=$?
           test "$code" = 3
 
   workflows:

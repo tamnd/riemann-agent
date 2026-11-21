@@ -3,12 +3,12 @@ module github.com/tamnd/riemann-agent
 go 1.27.3
 
 require (
+	github.com/anthropics/anthropic-sdk-go/v2 v2.13.0
 	github.com/tamnd/math2-agent v0.6.33
 	go.yaml.in/yaml/v3 v3.0.6
 )
 
 require (
-	github.com/anthropics/anthropic-sdk-go/v2 v2.13.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.6.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

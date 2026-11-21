@@ -66,7 +66,7 @@ func runReport(args []string, stdout, stderr io.Writer) error {
 
 // gitEdit counts the lines that changed in a file since the commit that added it. A file that git does not know yet has no edit.
 func gitEdit(root, file string) (agent.Edit, error) {
-	out, err := exec.Command("git", "-C", root, "log", "--diff-filter=A", "--format=%H", "--", file).Output()
+	out, err := exec.Command("git", "-C", root, "log", "--diff-filter=A", "--format=%H", "--", file).Output() // #nosec G204 -- git with a path of the content repository
 	if err != nil {
 		return agent.Edit{}, err
 	}
@@ -74,7 +74,7 @@ func gitEdit(root, file string) (agent.Edit, error) {
 	if len(shas) == 0 {
 		return agent.Edit{}, nil
 	}
-	out, err = exec.Command("git", "-C", root, "diff", "--numstat", shas[len(shas)-1], "--", file).Output()
+	out, err = exec.Command("git", "-C", root, "diff", "--numstat", shas[len(shas)-1], "--", file).Output() // #nosec G204 -- git with a commit that git gave
 	if err != nil {
 		return agent.Edit{}, err
 	}

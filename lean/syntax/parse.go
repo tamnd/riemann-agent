@@ -387,7 +387,7 @@ func locals(cmd []token, i, sigEnd int, own []string) map[string]bool {
 			m := k + 1
 			if x.text == "rcases" {
 				// rcases e with pat: the names come after with.
-				for m < len(cmd) && cmd[m].line == x.line && !(cmd[m].kind == tIdent && cmd[m].text == "with") {
+				for m < len(cmd) && cmd[m].line == x.line && (cmd[m].kind != tIdent || cmd[m].text != "with") {
 					m++
 				}
 				m++

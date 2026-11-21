@@ -281,10 +281,10 @@ func braceGroup(s string, i int) (string, int, bool) {
 func conceptKey(s string) string {
 	s = strings.ToLower(s)
 	s = strings.Map(func(r rune) rune {
-		switch {
-		case r == '-' || r == '_' || r == '–':
+		switch r {
+		case '-', '_', '–':
 			return ' '
-		case r == '\'' || r == '’' || r == ',' || r == '.':
+		case '\'', '’', ',', '.':
 			return -1
 		}
 		return r
@@ -319,7 +319,7 @@ func scanMath2(root string) (map[string]string, int, error) {
 		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".md") {
 			return err
 		}
-		data, err := os.ReadFile(p) // #nosec G304 -- a file of the math2 checkout
+		data, err := os.ReadFile(p) // #nosec G304 G122 -- a file of the math2 checkout, a tree that rh does not change
 		if err != nil {
 			return err
 		}
