@@ -110,3 +110,10 @@ ol.names { list-style: decimal; padding-left: 1.6rem; }
 
 button.more { margin: .5rem 0 1rem; padding: .4rem .9rem; font: inherit; font-size: .9rem; color: var(--fg, inherit); background: transparent; border: 1px solid currentColor; border-radius: 6px; cursor: pointer; opacity: .8; }
 button.more:hover { opacity: 1; }
+
+.side .toc ol { margin: 0; padding-left: 1.2rem; }
+.side .toc li { margin: .25rem 0; }
+.side .toc [aria-current] { font-weight: 600; }
+.pager.chapters a { display: flex; flex-direction: column; max-width: 48%; text-decoration: none; }
+.pager.chapters a[rel=next] { text-align: right; margin-left: auto; }
+.pager.chapters .small { color: var(--muted, #777); font-size: .8rem; }

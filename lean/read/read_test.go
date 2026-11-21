@@ -2,6 +2,7 @@ package read
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -49,6 +50,19 @@ func TestWords(t *testing.T) {
 	for in, want := range map[string]string{"IsRegularLocalRing": "is regular local ring", "everyCharacter": "every character", "GL": "GL", "LSeries": "L series"} {
 		if got := words(in); got != want {
 			t.Errorf("words(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+func TestReadRoot(t *testing.T) {
+	r := Read("theorem", "x", "(h : _root_.Foo.Bar) : _root_.Baz")
+	items := r.Assume
+	if r.Then != nil {
+		items = append(items, *r.Then)
+	}
+	for _, it := range items {
+		if strings.Contains(it.Lean+it.Text, "_root_") {
+			t.Errorf("reading keeps _root_: %+v", it)
 		}
 	}
 }

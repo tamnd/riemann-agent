@@ -106,14 +106,21 @@ type SideLink struct {
 	Where   string
 	Sub     string
 	Missing bool
+	Current bool
 }
 
 // Side is the side panel of a proof page.
 type Side struct {
-	Lean   []SideLink
-	Needs  []SideLink
-	UsedBy []SideLink
-	Next   []SideLink
+	Contents []SideLink // the chapters of the proof, in reading order
+	Lean     []SideLink
+	Needs    []SideLink
+	UsedBy   []SideLink
+	Next     []SideLink
+}
+
+// Pager links a chapter to the chapter before it and the chapter after it.
+type Pager struct {
+	Prev, Next *SideLink
 }
 
 // HomeData is the extra data of the main page.
@@ -134,6 +141,7 @@ type view struct {
 	Section     string
 	Trail       []Crumb
 	Side        *Side
+	Pager       *Pager
 	Home        *HomeData
 	Timeline    []TimelineEntry
 	Code        *Code
@@ -392,14 +400,35 @@ func (b *builder) collect() error {
 		return err
 	}
 	sort.Strings(chapters)
+	var docs []doc
+	var toc []SideLink
 	for _, f := range chapters {
 		d, err := readDoc(b.opt.Content, "proof/"+filepath.Base(f))
 		if err != nil {
 			return fmt.Errorf("site: %w", err)
 		}
+		docs = append(docs, d)
+		toc = append(toc, SideLink{Text: d.Front.Title, URL: "/" + chapterPath(filepath.Base(f)), Sub: d.Front.Level})
+	}
+	for i, d := range docs {
 		v := b.docView(d)
-		v.Path, v.Section, v.tmpl = chapterPath(filepath.Base(f)), "proof", "page"
+		v.Path, v.Section, v.tmpl = chapterPath(filepath.Base(d.Rel)), "proof", "page"
 		v.Side = b.side(d.Front)
+		if len(docs) > 1 {
+			if v.Side == nil {
+				v.Side = &Side{}
+			}
+			v.Side.Contents = make([]SideLink, len(toc))
+			copy(v.Side.Contents, toc)
+			v.Side.Contents[i].Current = true
+			v.Pager = &Pager{}
+			if i > 0 {
+				v.Pager.Prev = &toc[i-1]
+			}
+			if i+1 < len(toc) {
+				v.Pager.Next = &toc[i+1]
+			}
+		}
 		if v.Path == "proof/" {
 			v.Trail = []Crumb{{Text: "Home", URL: "/"}, {Text: "Proof", Current: true}}
 		} else {

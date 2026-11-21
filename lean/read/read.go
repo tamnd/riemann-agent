@@ -24,6 +24,8 @@ type Reading struct {
 
 // Read reads the signature of a declaration of the given kind and name.
 func Read(kind, name, sig string) Reading {
+	// _root_. only tells Lean to start from the top namespace. A reader does not need it.
+	sig = strings.ReplaceAll(sig, "_root_.", "")
 	binders, concl := split(sig)
 	var r Reading
 	r.Name = nameWords(name)

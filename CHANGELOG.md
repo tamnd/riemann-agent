@@ -11,9 +11,12 @@ All changes that a user can see are in this file. The format follows [Keep a Cha
 - The code pages. With `-index` and `-spine`, `rh site build` adds the numbers of the release, the trunk, the large branches and the libraries to `/code/`, a page for each declaration at `/code/decl/?n=Name` and a page for each module at `/code/module/?m=Name`. The pages read the records from shards in `api/decl/`, `api/module/` and `api/names/`, so the site has about 5,300 files for a million declarations. The search page and the code page search the Lean names.
 - Each declaration page now has a plain reading of the statement. The package `lean/read` reads the Lean signature without Lean and gives what the statement takes, what it assumes and what it gives, in words. The page also shows the chain of declarations from `riemannHypothesis` down to it, the list of its parts in the dominator tree with the largest part first, and links to the previous and the next part of the same parent. A long list of parts shows 100 rows first and a button shows the rest.
 
+- The proof pages have a list of all chapters in reading order in the side panel, and links to the chapter before and the chapter after at the bottom of each chapter.
+
 ### Changed
 
 - The shards in `api/` are gzip files. The browser decompresses them. The site is now 416 MB and 5,340 files, below the limits of the Cloudflare static assets.
+- The plain reading drops the prefix `_root_.` from the Lean names.
 
 ## v0.1.0 (2026-11-21)
 

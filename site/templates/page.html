@@ -6,6 +6,7 @@
 {{template "page-body" .}}
 </div>
 <aside class="side" aria-label="Context">
+{{with .Side.Contents}}<section class="toc"><h2>The proof, in order</h2><ol>{{range .}}<li>{{if .Current}}<span aria-current="page">{{.Text}}</span>{{else}}<a href="{{.URL}}">{{.Text}}</a>{{end}}</li>{{end}}</ol></section>{{end}}
 {{with .Side.Lean}}<section><h2>In Lean</h2><ul>{{range .}}<li><a href="{{.URL}}"><code>{{.Name}}</code></a>{{with .Where}}<span class="sub">{{.}}</span>{{end}}</li>{{end}}</ul></section>{{end}}
 {{with .Side.Needs}}<section><h2>Needs</h2><ul>{{range .}}<li><a href="{{.URL}}"{{if .Missing}} class="missing" title="This page does not exist yet"{{end}}>{{.Text}}</a>{{with .Sub}}<span class="sub">{{.}}</span>{{end}}</li>{{end}}</ul></section>{{end}}
 {{with .Side.UsedBy}}<section><h2>Used by</h2><ul>{{range .}}<li><a href="{{.URL}}">{{.Text}}</a></li>{{end}}</ul></section>{{end}}
@@ -25,5 +26,6 @@
 <div class="prose">
 {{.Body}}
 </div>
+{{with .Pager}}<nav class="pager chapters" aria-label="Chapters">{{with .Prev}}<a href="{{.URL}}" rel="prev"><span class="small">Before</span> {{.Text}}</a>{{else}}<span></span>{{end}}{{with .Next}}<a href="{{.URL}}" rel="next"><span class="small">Next</span> {{.Text}}</a>{{else}}<span></span>{{end}}</nav>{{end}}
 <p class="page-foot">{{with .SourceURL}}<a href="{{.}}">The source of this page</a>. {{end}}{{with .MarkdownURL}}<a href="{{.}}">Markdown</a>. {{end}}Something is wrong? <a href="{{$.Site.ContentRepo}}/issues/new?template=error.yml">Report it</a>.</p>
 {{end}}
