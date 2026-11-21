@@ -233,3 +233,47 @@
   }).catch(function () { status.textContent = "The search index did not load."; });
   show();
 })();
+
+// The known mark on a learning path: a button after each concept heading. The marks stay in localStorage of this browser.
+(function () {
+  var m = location.pathname.match(/\/learn\/([a-z0-9-]+)\/$/);
+  if (!m || m[1] === "map") return;
+  var key = "riemann.known." + m[1];
+  var known = {};
+  try { known = JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch (e) { known = {}; }
+  var heads = document.querySelectorAll(".prose h2");
+  var total = 0, count = 0;
+  var note = document.createElement("p");
+  note.className = "known-count";
+  function update() {
+    count = 0;
+    Object.keys(known).forEach(function (k) { if (known[k]) count++; });
+    note.textContent = "You marked " + count + " of " + total + " concepts as known.";
+  }
+  heads.forEach(function (h) {
+    if (!/^\d+\. /.test(h.textContent)) return;
+    total++;
+    var id = h.id || h.textContent;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "known";
+    function paint() {
+      b.textContent = known[id] ? "Known" : "Mark as known";
+      b.setAttribute("aria-pressed", known[id] ? "true" : "false");
+      h.classList.toggle("is-known", !!known[id]);
+    }
+    b.addEventListener("click", function () {
+      known[id] = !known[id];
+      if (!known[id]) delete known[id];
+      try { localStorage.setItem(key, JSON.stringify(known)); } catch (e) {}
+      paint();
+      update();
+    });
+    paint();
+    h.appendChild(b);
+  });
+  if (total === 0) return;
+  var first = heads[0];
+  first.parentNode.insertBefore(note, first);
+  update();
+})();

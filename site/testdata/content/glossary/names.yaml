@@ -1,0 +1,9 @@
+- name: riemannHypothesis
+  kind: theorem
+  says: The Riemann Hypothesis, as Mathlib states it.
+  math: $\zeta(s) = 0 \Rightarrow \operatorname{Re}(s) = \tfrac12$
+  step: top
+  status: drafted
+- name: UpperTheory.
+  kind: namespace
+  says: The upper part of the proof.

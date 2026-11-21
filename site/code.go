@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"html"
+	"html/template"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -106,6 +107,13 @@ type declRecord struct {
 	PK [][2]any          `json:"pk,omitempty"` // the parts: the declarations that this one dominates directly, with their sizes, the largest first
 	ST []string          `json:"st,omitempty"` // the step page that explains the declaration: its id and its title
 	LT *litRecord        `json:"lt,omitempty"` // the entry of links/literature.yaml
+	G  *glossRecord      `json:"g,omitempty"`  // the entry of glossary/names.yaml
+}
+
+// glossRecord is the glossary entry of a declaration, as HTML with the math rendered.
+type glossRecord struct {
+	S string `json:"s"`
+	M string `json:"m,omitempty"`
 }
 
 // litRecord is a named result on its declaration page.
@@ -327,6 +335,9 @@ func (b *builder) codeFiles(w *writer) {
 			for _, c := range l.Cite {
 				r.LT.C = append(r.LT.C, [2]string{fmt.Sprintf("%s. %s. %s, %d.", strings.Join(c.Authors, ", "), strings.TrimSuffix(c.Title, "."), c.Venue, c.Year), c.Link()})
 			}
+		}
+		if e, ok := b.glossOf[d.Name]; ok && e.Kind != "namespace" {
+			r.G = &glossRecord{S: string(inline(template.HTML(b.inline(e.Says)))), M: string(inline(template.HTML(b.inline(e.Math))))} // #nosec G203 -- the output of the Markdown renderer
 		}
 		rd := leanread.Read(d.Kind, d.Name, d.Sig)
 		r.R = &rd

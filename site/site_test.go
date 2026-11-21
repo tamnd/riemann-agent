@@ -33,6 +33,39 @@ func read(t *testing.T, dir, name string) string {
 	return string(data)
 }
 
+func TestLearn(t *testing.T) {
+	out, _ := build(t)
+	path := read(t, out, "learn/top/index.html")
+	for _, want := range []string{
+		`1. Riemann hypothesis`,
+		`Where the proof uses it.`,
+		`href="https://math2.tamnd.com/wiki/riemann-hypothesis/"`,
+		`href="https://math2.tamnd.com/wiki/dirichlet-l-function/"`,
+		`href="https://github.com/tamnd/math2/issues/9"`,
+		`href="/step/top/"`,
+		`<math`,
+	} {
+		if !strings.Contains(path, want) {
+			t.Errorf("learn/top/index.html has no %s", want)
+		}
+	}
+	if s := read(t, out, "learn/index.html"); !strings.Contains(s, `href="/learn/top/"`) || !strings.Contains(s, `href="/learn/map/"`) {
+		t.Error("learn/index.html does not list the paths")
+	}
+	if s := read(t, out, "learn/map/index.html"); !strings.Contains(s, "With a node in Math 2.0: 2.") {
+		t.Errorf("the map has no count")
+	}
+	gl := read(t, out, "glossary/index.html")
+	for _, want := range []string{`The Riemann Hypothesis, as Mathlib states it.`, `href="/step/top/"`, `UpperTheory`, `<math`} {
+		if !strings.Contains(gl, want) {
+			t.Errorf("glossary/index.html has no %s", want)
+		}
+	}
+	if s := read(t, out, "proof/index.html"); !strings.Contains(s, `href="/learn/top/"`) {
+		t.Error("the overview does not link to its path")
+	}
+}
+
 func TestBuild(t *testing.T) {
 	out, res := build(t)
 	if len(res.Missing) != 1 || res.Missing[0] != "ZZZZZZZZZZ" {

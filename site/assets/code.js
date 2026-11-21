@@ -229,6 +229,13 @@
       ])
     ]);
     box.appendChild(head);
+    if (r.g) {
+      // r.g.s and r.g.m are HTML that the build made from glossary/names.yaml.
+      var gl = el("p", { class: "callout" }, [el("a", { href: "/glossary/" }, ["The glossary"]), ": "]);
+      var gs = el("span", {}, []); gs.innerHTML = r.g.s; gl.appendChild(gs);
+      if (r.g.m) { var gm = el("span", {}, []); gm.innerHTML = " In standard notation: " + r.g.m + "."; gl.appendChild(gm); }
+      box.appendChild(gl);
+    }
     if (r.st) box.appendChild(el("p", { class: "callout" }, ["This declaration has a step page with its statement in standard notation and its proof in words: ", el("a", { href: "/step/" + r.st[0] + "/" }, [r.st[1]]), "."]));
     if (r.lt) {
       var lit = el("section", {}, [el("h2", {}, ["In the literature"]), el("p", {}, ["The name points to " + r.lt.r + ". " + (r.lt.h ? "The proof reads the hypothesis structure." : "The proof does not read the hypothesis structure. The code proves the statement from other declarations.")])]);

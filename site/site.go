@@ -210,6 +210,11 @@ type builder struct {
 	chapterOf  map[string]*chapterInfo
 	lit        map[string]*steps.Named
 	litList    []*steps.Named
+
+	learn    []*steps.Path
+	glossary []steps.Entry
+	glossOf  map[string]*steps.Entry
+	links    *steps.Links
 }
 
 // Build builds the site in opt.Out.
@@ -255,6 +260,9 @@ func Build(ctx context.Context, opt Options) (*Result, error) {
 	}
 	b.md = markup.New(b.math)
 	if err := b.codeData(); err != nil {
+		return nil, err
+	}
+	if err := b.readLearn(); err != nil {
 		return nil, err
 	}
 	if err := b.readSteps(); err != nil {
@@ -484,6 +492,7 @@ func (b *builder) collect() error {
 		b.add(v)
 	}
 	b.stepViews(infos)
+	b.learnViews(infos)
 	if err := b.timeline(); err != nil {
 		return err
 	}
@@ -656,6 +665,14 @@ func (b *builder) machine(w *writer) {
 			kind = "page"
 		}
 		search = append(search, searchEntry{T: v.Path, N: v.Title, K: kind, U: v.Path, A: aliases(v)})
+	}
+	for _, e := range b.glossary {
+		search = append(search, searchEntry{T: "glossary:" + e.Name, N: strings.TrimSuffix(e.Name, "."), K: "glossary", U: "glossary/", A: []string{e.Kind}})
+	}
+	for _, p := range b.learn {
+		for _, it := range p.Items {
+			search = append(search, searchEntry{T: "learn:" + p.ID + ":" + it.Concept, N: it.Concept, K: "concept", U: "learn/" + p.ID + "/", A: []string{p.Title}})
+		}
 	}
 	w.json("api/pages.json", map[string]any{"name": "riemann", "commit": b.opt.Commit, "built": b.opt.Date, "source": b.source, "pages": pages})
 	w.json("api/search.json", search)

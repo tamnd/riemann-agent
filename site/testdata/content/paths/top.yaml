@@ -1,0 +1,15 @@
+id: top
+title: The top of the proof
+for: [overview]
+lead: The concepts of the overview.
+items:
+  - concept: Riemann hypothesis
+    math2: VCGF9YR36X
+    text: The zeros of $\zeta$ lie on a line.
+    why: It is the statement of the top theorem.
+    steps: [top]
+  - concept: Dirichlet L-function
+    text: The series $\sum \chi(n) n^{-s}$.
+  - concept: Theta lift
+    proposal: https://github.com/tamnd/math2/issues/9
+    text: A way to move forms between groups.

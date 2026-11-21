@@ -128,3 +128,9 @@ button.more:hover { opacity: 1; }
 /* Long Lean names and paths wrap in the text column. Long lines of Lean wrap and keep their indentation. */
 .prose p code, .prose li code, .prose td code { overflow-wrap: anywhere; }
 .prose pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* The known mark of a learning path. */
+.prose h2 .known { margin-left: .75rem; font: inherit; font-size: .75rem; vertical-align: middle; padding: .15rem .55rem; border: 1px solid var(--line, #ccc); border-radius: 999px; background: transparent; color: inherit; cursor: pointer; }
+.prose h2 .known[aria-pressed="true"] { background: var(--accent, #2a6); border-color: var(--accent, #2a6); color: #fff; }
+.prose h2.is-known { opacity: .75; }
+.known-count { font-size: .9rem; color: var(--muted, #666); }
